@@ -1,0 +1,1164 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Evoluție prețuri pe zone — București</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <style>
+    /* ── IMOBILIARE.RO DESIGN TOKENS ─────────────────────────────── */
+    :root {
+      --im-color-brand:           #e71e41;
+      --im-color-brand-700:       #b31e38;
+      --im-color-secondary:       #048ba8;
+
+      --im-color-success:         #3f6212;
+      --im-color-success-bg:      #f7fee7;
+      --im-color-danger:          #b91c1c;
+      --im-color-danger-bg:       #fbc9d2;
+      --im-color-neutral-400:     #9ca3af;
+      --im-color-neutral-600:     #6b7280;
+
+      --im-color-bg:              #ffffff;
+      --im-color-surface:         #ffffff;
+      --im-color-surface-raised:  #f9fafb;
+      --im-color-surface-inverse: #111827;
+
+      --im-color-border:          #d1d5db;
+      --im-color-border-subtle:   #d1d5db;
+
+      --im-color-text-primary:    #111827;
+      --im-color-text-secondary:  #4b5563;
+      --im-color-text-muted:      #6b7280;
+
+      --im-font-family-base:      'Manrope', sans-serif;
+      --im-font-family-display:   'Unbounded', sans-serif;
+
+      /* District palette — 6 accessible colours on white, drawn from brand tokens */
+      --ds-s1: #e71e41;   /* brand.fill — rose red         */
+      --ds-s2: #048ba8;   /* border.brand-alt — teal        */
+      --ds-s3: #b45309;   /* feedback.warning-text — amber  */
+      --ds-s4: #004466;   /* finance.fill-dark — navy       */
+      --ds-s5: #4d7c0f;   /* feedback.success — olive       */
+      --ds-s6: #8f182d;   /* brand.fill-hover — dark rose   */
+      --ds-city:   #111827;
+      --ds-nation: #9ca3af;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--im-font-family-base);
+      background: var(--im-color-bg);
+      color: var(--im-color-text-primary);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── SECTION ────────────────────────────────────────────────── */
+    .section {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 56px 48px 72px;
+    }
+    @media (max-width: 900px)  { .section { padding: 40px 28px 56px; } }
+    @media (max-width: 480px)  { .section { padding: 28px 16px 44px; } }
+
+    /* ── SECTION HEADER ─────────────────────────────────────────── */
+    .section-header { margin-bottom: 32px; animation: fadeUp 0.4s ease both; }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 10px;
+    }
+    .eyebrow-pip {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--im-color-brand);
+      flex-shrink: 0;
+    }
+    .eyebrow-text {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--im-color-brand-700);
+    }
+
+    h2.section-title {
+      font-family: var(--im-font-family-display);
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--im-color-text-primary);
+      margin-bottom: 6px;
+      line-height: 1.25;
+    }
+    @media (max-width: 600px) { h2.section-title { font-size: 21px; } }
+
+    .section-sub {
+      font-size: 13px;
+      color: var(--im-color-text-secondary);
+      line-height: 1.5;
+    }
+
+    /* ── FILTER BAR ─────────────────────────────────────────────── */
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 20px;
+      align-items: flex-start;
+      animation: fadeUp 0.42s ease 0.05s both;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 6px;
+    }
+
+    .filter-label {
+      font-size: 12px;
+      font-weight: 400;
+      color: #4b5563;
+      white-space: nowrap;
+    }
+
+    .filter-sep { display: none; }
+
+    button.pill {
+      font-family: var(--im-font-family-base);
+      font-size: 13px;
+      font-weight: 400;
+      padding: 12px 16px;
+      border-radius: 8px;
+      border: 1px solid #6b7280;
+      background: var(--im-color-surface);
+      color: #374151;
+      cursor: pointer;
+      transition: background 0.14s ease, color 0.14s ease, border-color 0.14s ease;
+      white-space: nowrap;
+      line-height: 1;
+      outline: none;
+    }
+    button.pill:hover:not(.active):not(:disabled) {
+      color: #0b778e;
+    }
+    button.pill:focus-visible {
+      border: 2px solid #048ba8;
+    }
+    button.pill.active {
+      background: #e6f3f6;
+      border: 1px solid #6b7280;
+      color: #0b778e;
+    }
+    button.pill.active:hover {
+      color: #0b778e;
+    }
+    button.pill:disabled {
+      background: #e5e7eb;
+      border-color: transparent;
+      color: #9ca3af;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    /* ── CHART CARD ─────────────────────────────────────────────── */
+    .chart-card {
+      background: #f3f4f6;
+      border-radius: 18px;
+      padding: 8px;
+    }
+    .chart-card + .chart-card { margin-top: 20px; }
+    .chart-inner {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 24px 24px 20px;
+      box-shadow: 0px 2px 6px rgba(0,0,0,0.06), 0px 1px 2px rgba(0,0,0,0.04);
+    }
+    #cardA { animation: fadeUp 0.45s ease 0.08s both; }
+    #cardB { animation: fadeUp 0.45s ease 0.14s both; }
+
+    .card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--im-color-text-primary);
+      line-height: 1.3;
+    }
+    .card-sub {
+      font-size: 11px;
+      color: var(--im-color-text-muted);
+      margin-top: 2px;
+    }
+
+    /* ── CHART A LEGEND ─────────────────────────────────────────── */
+    .chart-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-bottom: 14px;
+    }
+
+    button.legend-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 9px;
+      border-radius: 9999px;
+      border: 1.5px solid currentColor;
+      background: transparent;
+      font-family: var(--im-font-family-base);
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      outline: none;
+      transition: opacity 0.15s;
+      line-height: 1.5;
+    }
+    button.legend-btn:focus-visible {
+      outline: 2px solid var(--im-color-secondary);
+      outline-offset: 2px;
+    }
+    button.legend-btn.hidden { opacity: 0.3; }
+    button.legend-btn.pinned { cursor: default; }
+
+    .legend-swatch {
+      width: 16px;
+      height: 2.5px;
+      border-radius: 2px;
+      background: currentColor;
+      flex-shrink: 0;
+    }
+    .legend-swatch.dashed {
+      background: repeating-linear-gradient(
+        to right, currentColor 0 4px, transparent 4px 8px
+      );
+    }
+    .legend-swatch.dotted {
+      background: repeating-linear-gradient(
+        to right, currentColor 0 2px, transparent 2px 5px
+      );
+    }
+
+    /* ── RESPONSIVE FILTER HELPERS ──────────────────────── */
+    .pills-row         { display: flex; gap: 5px; flex-wrap: wrap; }
+    .secondary-filters { display: contents; }
+    .short-text        { display: none; }
+    .mobile-filter-bar { display: none; }
+
+    /* ── CANVAS WRAPS ───────────────────────────────────────────── */
+    .chart-wrap { position: relative; height: 300px; }
+    @media (max-width: 768px) { .chart-wrap { height: 250px; } }
+    #chartBWrap { height: 272px; } /* overridden by JS */
+
+    /* ── MOBILE FILTER LAYOUT (≤ 640px) ─────────────────── */
+    @media (max-width: 640px) {
+      .chart-inner { padding: 16px; }
+      .filter-bar { flex-direction: column; gap: 0; }
+
+      #analysisFilters {
+        gap: 6px;
+        width: 100%;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--im-color-border);
+      }
+      #analysisFilters .pills-row {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        gap: 6px;
+        width: 100%;
+        -webkit-mask-image: linear-gradient(to right, black 88%, transparent 100%);
+        mask-image: linear-gradient(to right, black 88%, transparent 100%);
+      }
+      #analysisFilters .pills-row::-webkit-scrollbar { display: none; }
+
+      .full-text  { display: none; }
+      .short-text { display: inline; }
+
+      .mobile-filter-bar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 0 4px;
+        width: 100%;
+      }
+      .mobile-filter-btn {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-family: var(--im-font-family-base);
+        font-size: 13px;
+        font-weight: 600;
+        background: var(--im-color-surface);
+        border: 1px solid var(--im-color-border-subtle);
+        border-radius: 8px;
+        padding: 9px 13px;
+        cursor: pointer;
+        color: var(--im-color-text-secondary);
+        transition: border-color 0.14s, color 0.14s;
+        outline: none;
+        flex-shrink: 0;
+        line-height: 1;
+      }
+      .mobile-filter-btn:focus-visible { border: 2px solid var(--im-color-secondary); }
+      .mobile-filter-btn.has-active {
+        border-color: var(--im-color-secondary);
+        color: var(--im-color-secondary);
+      }
+      .mobile-filter-count {
+        display: none;
+        align-items: center;
+        justify-content: center;
+        min-width: 17px;
+        height: 17px;
+        padding: 0 4px;
+        border-radius: 9px;
+        background: var(--im-color-secondary);
+        color: #fff;
+        font-size: 10px;
+        font-weight: 700;
+      }
+      .mobile-filter-btn.has-active .mobile-filter-count { display: inline-flex; }
+      .filter-chevron {
+        font-size: 11px;
+        display: inline-block;
+        transition: transform 0.18s ease;
+      }
+      .mobile-filter-btn[aria-expanded="true"] .filter-chevron { transform: rotate(180deg); }
+      .mobile-active-chips {
+        display: flex;
+        gap: 5px;
+        overflow: hidden;
+        flex: 1;
+        min-width: 0;
+      }
+      .mobile-chip {
+        font-size: 11px;
+        font-weight: 600;
+        padding: 4px 9px;
+        border-radius: 6px;
+        background: #e6f3f6;
+        color: var(--im-color-secondary);
+        white-space: nowrap;
+      }
+      .secondary-filters {
+        display: none;
+        flex-direction: column;
+        gap: 14px;
+        padding: 14px 0 4px;
+        width: 100%;
+        border-top: 1px solid var(--im-color-border);
+        margin-top: 2px;
+      }
+      .secondary-filters.open { display: flex; }
+      .secondary-filters .filter-label {
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        color: var(--im-color-text-muted);
+        line-height: 1;
+      }
+      .secondary-filters .pills-row {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        gap: 6px;
+        width: 100%;
+      }
+      .secondary-filters .pills-row::-webkit-scrollbar { display: none; }
+      .secondary-filters button.pill {
+        font-size: 12px;
+        padding: 9px 13px;
+        flex-shrink: 0;
+      }
+    }
+
+    /* ── PERIOD TOGGLE — same pill style as filter bar ─────────── */
+    .period-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      flex-shrink: 0;
+      flex-wrap: wrap;
+    }
+
+    button.period-btn {
+      font-family: var(--im-font-family-base);
+      font-size: 13px;
+      font-weight: 400;
+      padding: 12px 16px;
+      border-radius: 8px;
+      border: 1px solid #6b7280;
+      background: var(--im-color-surface);
+      color: #374151;
+      cursor: pointer;
+      transition: background 0.14s ease, color 0.14s ease, border-color 0.14s ease;
+      white-space: nowrap;
+      line-height: 1;
+      outline: none;
+    }
+    button.period-btn:hover:not(.active) { color: #0b778e; }
+    button.period-btn.active {
+      background: #e6f3f6;
+      border: 1px solid #6b7280;
+      color: #0b778e;
+    }
+    button.period-btn.active:hover { color: #0b778e; }
+    button.period-btn:focus-visible { border: 2px solid #048ba8; }
+
+    .chart-caption {
+      margin-top: 10px;
+      font-size: 11px;
+      color: var(--im-color-text-muted);
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+<div class="section">
+
+  <!-- SHARED FILTER BAR -->
+  <div class="filter-bar" role="group" aria-label="Filtre analiză">
+
+    <div class="filter-group" id="analysisFilters">
+      <span class="filter-label">Tip analiză</span>
+      <div class="pills-row">
+        <button class="pill"        data-filter="analysis" data-val="pretMedian"   ><span class="full-text">Preț median</span><span class="short-text">Median</span></button>
+        <button class="pill active" data-filter="analysis" data-val="pretMp"       >Preț /m²</button>
+        <button class="pill"        data-filter="analysis" data-val="numarAnunturi"><span class="full-text">Nr. anunțuri</span><span class="short-text">Anunțuri</span></button>
+      </div>
+    </div>
+
+    <div class="filter-sep" aria-hidden="true"></div>
+
+    <div class="mobile-filter-bar">
+      <button class="mobile-filter-btn" id="mobileFilterBtn"
+              aria-expanded="false" aria-controls="secondaryFilters">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+          <path d="M1 3h12M3 7h8M5 11h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        Filtre
+        <span class="mobile-filter-count" id="mobileFilterCount"></span>
+        <span class="filter-chevron" aria-hidden="true">▾</span>
+      </button>
+      <div class="mobile-active-chips" id="mobileActiveChips"></div>
+    </div>
+
+    <div id="secondaryFilters" class="secondary-filters">
+
+      <div class="filter-group">
+        <span class="filter-label">Tip proprietate</span>
+        <div class="pills-row">
+          <button class="pill active" data-filter="propertyType" data-val="apartament">Apartament</button>
+          <button class="pill"        data-filter="propertyType" data-val="casa"       >Casă</button>
+          <button class="pill"        data-filter="propertyType" data-val="teren"      >Teren</button>
+        </div>
+      </div>
+
+      <div class="filter-sep" aria-hidden="true"></div>
+
+      <div class="filter-group">
+        <span class="filter-label">Piață</span>
+        <div class="pills-row">
+          <button class="pill active" data-filter="market" data-val="vanzare"    >Vânzare</button>
+          <button class="pill"        data-filter="market" data-val="inchiriere" >Închiriere</button>
+          <button class="pill"        data-filter="market" data-val="primar"     >Primar</button>
+          <button class="pill"        data-filter="market" data-val="secundar"   >Secundar</button>
+        </div>
+      </div>
+
+      <div class="filter-sep" aria-hidden="true"></div>
+
+      <div class="filter-group">
+        <span class="filter-label">Nr. camere</span>
+        <div class="pills-row">
+          <button class="pill active" data-filter="rooms" data-val="toate">Toate</button>
+          <button class="pill"        data-filter="rooms" data-val="1"    >1</button>
+          <button class="pill"        data-filter="rooms" data-val="2"    >2</button>
+          <button class="pill"        data-filter="rooms" data-val="3"    >3</button>
+          <button class="pill"        data-filter="rooms" data-val="4plus">4+</button>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- CHART A — Line chart -->
+  <div class="chart-card" id="cardA">
+  <div class="chart-inner">
+    <div class="card-header">
+      <div>
+        <div class="card-title">Evoluție prețuri pe zone</div>
+        <div class="card-sub" id="chartASubtitle">Preț /m² · Apartament · Vânzare · Toate camerele · Mai 2024 – Apr 2026</div>
+      </div>
+    </div>
+    <div class="chart-legend" id="chartALegend"
+         role="group" aria-label="Serii — click pentru a ascunde sau afișa un sector"></div>
+    <div class="chart-wrap">
+      <canvas id="chartA" role="img" aria-label="Grafic linie — evoluție prețuri pe sectoare"></canvas>
+    </div>
+  </div>
+  </div>
+
+  <!-- CHART B — Horizontal bar chart -->
+  <div class="chart-card" id="cardB">
+  <div class="chart-inner">
+    <div class="card-header">
+      <div>
+        <div class="card-title">Variație % pe zone</div>
+        <div class="card-sub" id="chartBSubtitle">Preț /m² — sectoarele Bucureștiului</div>
+      </div>
+      <div class="period-toggle" role="group" aria-label="Perioadă comparație">
+        <button class="period-btn active" data-period="yoy">% YoY</button>
+        <button class="period-btn"        data-period="mom">% MoM</button>
+        <button class="period-btn"        data-period="ytd">% de la 01/01/2025</button>
+      </div>
+    </div>
+    <div class="chart-wrap" id="chartBWrap">
+      <canvas id="chartB" role="img" aria-label="Grafic bare — variație procentuală pe sectoare"></canvas>
+    </div>
+    <p class="chart-caption" id="chartBCaption">
+      Preț /m² și variația procentuală față de aceeași perioadă a anului anterior
+    </p>
+  </div>
+  </div>
+
+</div><!-- /section -->
+
+<script>
+/* ════════════════════════════════════════════════════════════
+   TOKEN RESOLUTION
+   Bridge CSS custom properties → Chart.js (which needs
+   resolved strings, not var() references).
+════════════════════════════════════════════════════════════ */
+const _root = getComputedStyle(document.documentElement);
+const tok   = name => _root.getPropertyValue(name).trim();
+
+const T = {
+  brand:        tok('--im-color-brand'),
+  success:      tok('--im-color-success'),
+  danger:       tok('--im-color-danger'),
+  secondary:    tok('--im-color-secondary'),
+  neutral400:   tok('--im-color-neutral-400'),
+  textPrimary:  tok('--im-color-text-primary'),
+  textMuted:    tok('--im-color-text-muted'),
+  borderSubtle: tok('--im-color-border-subtle'),
+  fontBase:     tok('--im-font-family-base'),
+  cityAvg:      tok('--ds-city'),
+  natAvg:       tok('--ds-nation'),
+  districts: [
+    tok('--ds-s1'), tok('--ds-s2'), tok('--ds-s3'),
+    tok('--ds-s4'), tok('--ds-s5'), tok('--ds-s6'),
+  ],
+};
+
+/* ════════════════════════════════════════════════════════════
+   MOCK DATA
+   Source: district-chart-brief.md §6. Other filter combos
+   are generated by applying multipliers + deterministic noise.
+════════════════════════════════════════════════════════════ */
+const MONTHS = [
+  "Mai '24","Iun '24","Iul '24","Aug '24","Sep '24","Oct '24",
+  "Nov '24","Dec '24","Ian '25","Feb '25","Mar '25","Apr '25",
+  "Mai '25","Iun '25","Iul '25","Aug '25","Sep '25","Oct '25",
+  "Nov '25","Dec '25","Ian '26","Feb '26","Mar '26","Apr '26"
+];
+
+// Base: Apartament · Vânzare · Preț/m² · Toate camerele
+const BASE_PRICE = {
+  "Sector 1": [2450,2460,2475,2490,2510,2525,2540,2555,2570,2585,2600,2615,2625,2640,2660,2680,2695,2710,2730,2745,2760,2780,2800,2820],
+  "Sector 2": [1780,1790,1795,1805,1815,1825,1835,1845,1855,1865,1875,1885,1895,1905,1915,1925,1935,1945,1955,1965,1975,1985,1995,2005],
+  "Sector 3": [1690,1695,1700,1710,1720,1725,1735,1745,1755,1760,1770,1780,1790,1800,1810,1820,1830,1840,1850,1860,1870,1880,1890,1900],
+  "Sector 4": [1720,1730,1735,1745,1755,1760,1770,1780,1790,1800,1810,1815,1825,1835,1845,1855,1865,1875,1885,1895,1905,1915,1925,1935],
+  "Sector 5": [1580,1585,1590,1595,1605,1610,1620,1625,1635,1640,1650,1660,1670,1680,1685,1695,1705,1710,1720,1725,1735,1745,1755,1760],
+  "Sector 6": [1820,1830,1840,1850,1860,1870,1880,1890,1900,1910,1920,1930,1940,1950,1960,1970,1985,2000,2015,2025,2040,2055,2070,2085],
+};
+const BASE_CITY_AVG = [1840,1848,1856,1866,1878,1886,1897,1907,1918,1927,1938,1948,1958,1968,1980,1991,2003,2014,2026,2036,2048,2060,2073,2084];
+const BASE_NAT_AVG  = [1560,1565,1570,1578,1586,1592,1600,1608,1616,1624,1632,1640,1648,1656,1664,1672,1681,1690,1700,1708,1717,1727,1738,1748];
+
+// Base listings counts
+const BASE_ANUNTURI = {
+  "Sector 1": [420,435,418,440,458,445,430,395,410,425,442,460,475,492,480,465,450,462,478,490,502,515,530,545],
+  "Sector 2": [680,695,710,698,720,705,688,650,665,680,700,720,735,748,738,722,710,725,740,755,768,782,798,812],
+  "Sector 3": [720,735,748,760,775,762,745,705,718,730,748,768,785,800,790,775,760,775,792,808,822,838,854,870],
+  "Sector 4": [610,622,635,648,660,650,635,600,612,625,640,658,672,686,678,664,650,664,680,695,708,722,738,752],
+  "Sector 5": [380,390,398,408,418,410,400,378,386,396,408,420,432,442,435,425,415,425,436,448,458,468,480,492],
+  "Sector 6": [540,552,562,572,585,575,562,530,542,555,568,582,595,608,598,585,572,584,598,610,622,636,650,662],
+};
+const BASE_ANT_CITY = [2350,2429,2471,2526,2616,2547,2460,2258,2333,2411,2506,2608,2694,2776,2719,2641,2557,2635,2724,2806,2880,2961,3050,3134];
+const BASE_ANT_NAT  = [18200,18650,19100,19420,19800,19380,18850,17200,17680,18200,18820,19450,20100,20640,20200,19620,19050,19540,20120,20640,21100,21650,22200,22750];
+
+// Multipliers per filter dimension
+const PROP_MULT   = { apartament:1.0,  casa:1.32,   teren:0.52   };
+const MARKET_MULT = { vanzare:1.0,     inchiriere:0.0055, primar:1.08, secundar:0.93 };
+const ROOMS_MULT  = { toate:1.0, "1":0.76, "2":0.89, "3":1.01, "4plus":1.20 };
+const MARKET_ANT  = { vanzare:1.0, inchiriere:0.58, primar:0.33, secundar:0.67 };
+const ROOMS_ANT   = { toate:1.0,   "1":0.65, "2":0.72, "3":0.42, "4plus":0.18 };
+
+// Deterministic noise: gives plausible variation across filter combos
+function applyNoise(arr, seed) {
+  return arr.map((v, i) => {
+    const j = 1 + (Math.sin(seed * 997 + i * 41) * 0.5 + 0.5) * 0.04 - 0.02;
+    return Math.round(v * j);
+  });
+}
+
+function getDataset(st) {
+  const propM  = PROP_MULT[st.propertyType]  ?? 1;
+  const mktM   = MARKET_MULT[st.market]      ?? 1;
+  const roomsM = ROOMS_MULT[st.rooms]        ?? 1;
+  const scale  = propM * mktM * roomsM;
+
+  // Stable seed from filter combo for consistent noise
+  const seed = [st.analysis, st.propertyType, st.market, st.rooms]
+    .join('').split('').reduce((a, c, i) => a + c.charCodeAt(0) * (i + 1), 0);
+
+  if (st.analysis === 'numarAnunturi') {
+    const mktF = MARKET_ANT[st.market]  ?? 1;
+    const rmsF = ROOMS_ANT[st.rooms]    ?? 1;
+    const prop = { apartament:1, casa:0.42, teren:0.18 }[st.propertyType] ?? 1;
+    const f    = mktF * rmsF * prop;
+    const districts = {};
+    for (const [k, arr] of Object.entries(BASE_ANUNTURI)) {
+      districts[k] = applyNoise(arr.map(v => Math.round(v * f)), seed + k.charCodeAt(0));
+    }
+    return {
+      districts,
+      cityAvg:    applyNoise(BASE_ANT_CITY.map(v => Math.round(v * f)), seed + 1),
+      nationalAvg:applyNoise(BASE_ANT_NAT.map(v => Math.round(v * f)),  seed + 2),
+    };
+  }
+
+  // pretMp or pretMedian
+  const area = st.analysis === 'pretMedian' ? 52 : 1; // multiply by typical area for total price
+  const districts = {};
+  for (const [k, arr] of Object.entries(BASE_PRICE)) {
+    districts[k] = applyNoise(arr.map(v => Math.round(v * scale * area)), seed + k.charCodeAt(0));
+  }
+  return {
+    districts,
+    cityAvg:    applyNoise(BASE_CITY_AVG.map(v => Math.round(v * scale * area)), seed + 1),
+    nationalAvg:applyNoise(BASE_NAT_AVG.map(v => Math.round(v * scale * area)),  seed + 2),
+  };
+}
+
+/* ════════════════════════════════════════════════════════════
+   NUMBER FORMATTING  — Romanian convention: . thousand, , decimal
+════════════════════════════════════════════════════════════ */
+const CCY = '€'; // configurable constant per brief
+
+function fmtValue(v, st) {
+  const s = Math.round(v).toLocaleString('de-DE');
+  if (st.analysis === 'numarAnunturi') return `${s} anunțuri`;
+  if (st.analysis === 'pretMedian')    return `${CCY}${s}`;
+  if (st.market === 'inchiriere')      return `${CCY}${v.toFixed(2).replace('.', ',')} /m²/lună`;
+  return `${CCY}${s} /m²`;
+}
+
+function fmtTick(v, st) {
+  if (st.analysis === 'numarAnunturi') return Math.round(v).toLocaleString('de-DE');
+  if (st.analysis === 'pretMedian') {
+    const k = v / 1000;
+    return `${CCY}${Math.round(k)}k`;
+  }
+  if (st.market === 'inchiriere') return `${CCY}${v.toFixed(1).replace('.', ',')}`;
+  return `${CCY}${Math.round(v).toLocaleString('de-DE')}`;
+}
+
+function fmtPct(v) {
+  const sign = v > 0 ? '+' : '';
+  return `${sign}${v.toFixed(1).replace('.', ',')}%`;
+}
+
+/* ════════════════════════════════════════════════════════════
+   STATE
+════════════════════════════════════════════════════════════ */
+const DISTRICTS = Object.keys(BASE_PRICE); // ordered list
+
+const state = {
+  analysis:     'pretMp',
+  propertyType: 'apartament',
+  market:       'vanzare',
+  rooms:        'toate',
+  period:       'yoy',
+};
+
+const hiddenDistricts = new Set();
+
+/* ════════════════════════════════════════════════════════════
+   PCT-LABEL PLUGIN FOR CHART B
+   Draws % change text at the right end of each bar.
+   Uses a module-level array so the plugin stays stateless.
+════════════════════════════════════════════════════════════ */
+let _chartBPcts = [];
+
+Chart.register({
+  id: 'pctLabel',
+  afterDatasetsDraw(chart) {
+    if (chart.canvas.id !== 'chartB') return;
+    const meta = chart.getDatasetMeta(0);
+    if (!meta?.data?.length) return;
+
+    const { ctx } = chart;
+    ctx.save();
+    ctx.font         = `600 11px ${T.fontBase}`;
+    ctx.textBaseline = 'middle';
+
+    meta.data.forEach((bar, i) => {
+      const pct = _chartBPcts[i];
+      if (pct === undefined) return;
+
+      const label   = fmtPct(pct);
+      const textW   = ctx.measureText(label).width;
+      const barW    = Math.abs(bar.x - bar.base);
+      const inside  = barW > textW + 14;
+
+      if (inside) {
+        ctx.textAlign = 'right';
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText(label, bar.x - 6, bar.y);
+      } else {
+        ctx.textAlign = 'left';
+        ctx.fillStyle = _barColor(pct);
+        ctx.fillText(label, bar.x + 6, bar.y);
+      }
+    });
+
+    ctx.restore();
+  }
+});
+
+function _barColor(pct) {
+  if (Math.abs(pct) < 0.2) return T.neutral400;
+  return pct > 0 ? T.secondary : T.brand;
+}
+
+/* ════════════════════════════════════════════════════════════
+   CHART A — LINE CHART
+════════════════════════════════════════════════════════════ */
+let chartA = null;
+
+function buildADatasets(data) {
+  const ds = [];
+
+  DISTRICTS.forEach((name, i) => {
+    ds.push({
+      label:       name,
+      data:        data.districts[name],
+      borderColor: T.districts[i],
+      pointHoverBackgroundColor: T.districts[i],
+      borderWidth: 2,
+      tension:     0.3,
+      pointRadius: 0,
+      pointHoverRadius: 5,
+      fill:        false,
+      hidden:      hiddenDistricts.has(name),
+    });
+  });
+
+  // City average — thick dashed, always visible
+  ds.push({
+    label:       'Media orașului',
+    data:        data.cityAvg,
+    borderColor: T.cityAvg,
+    pointHoverBackgroundColor: T.cityAvg,
+    borderWidth: 2.5,
+    borderDash:  [8, 5],
+    tension:     0.3,
+    pointRadius: 0,
+    pointHoverRadius: 5,
+    fill:        false,
+    _pinned:     true,
+  });
+
+  // National average — dotted, always visible
+  ds.push({
+    label:       'Media națională',
+    data:        data.nationalAvg,
+    borderColor: T.natAvg,
+    pointHoverBackgroundColor: T.natAvg,
+    borderWidth: 2,
+    borderDash:  [3, 4],
+    tension:     0.3,
+    pointRadius: 0,
+    pointHoverRadius: 5,
+    fill:        false,
+    _pinned:     true,
+  });
+
+  return ds;
+}
+
+function renderALegend() {
+  const container = document.getElementById('chartALegend');
+  container.innerHTML = '';
+
+  DISTRICTS.forEach((name, i) => {
+    const hidden = hiddenDistricts.has(name);
+    const btn    = document.createElement('button');
+    btn.className = 'legend-btn' + (hidden ? ' hidden' : '');
+    btn.style.color = T.districts[i];
+    btn.setAttribute('aria-pressed', String(!hidden));
+    btn.setAttribute('aria-label', `${name} — ${hidden ? 'afișează' : 'ascunde'}`);
+    btn.innerHTML = `<span class="legend-swatch"></span>${name}`;
+    btn.addEventListener('click', () => {
+      hiddenDistricts.has(name) ? hiddenDistricts.delete(name) : hiddenDistricts.add(name);
+      const idx = DISTRICTS.indexOf(name);
+      chartA.data.datasets[idx].hidden = hiddenDistricts.has(name);
+      chartA.update();
+      renderALegend();
+    });
+    container.appendChild(btn);
+  });
+
+  // City avg — pinned legend item
+  const cityBtn = document.createElement('button');
+  cityBtn.className   = 'legend-btn pinned';
+  cityBtn.style.color = T.cityAvg;
+  cityBtn.tabIndex    = -1;
+  cityBtn.setAttribute('aria-disabled', 'true');
+  cityBtn.innerHTML   = `<span class="legend-swatch dashed"></span>Media orașului`;
+  container.appendChild(cityBtn);
+
+  // National avg — pinned legend item
+  const natBtn = document.createElement('button');
+  natBtn.className   = 'legend-btn pinned';
+  natBtn.style.color = T.natAvg;
+  natBtn.tabIndex    = -1;
+  natBtn.setAttribute('aria-disabled', 'true');
+  natBtn.innerHTML   = `<span class="legend-swatch dotted"></span>Media națională`;
+  container.appendChild(natBtn);
+}
+
+function initChartA(data) {
+  if (chartA) { chartA.destroy(); chartA = null; }
+
+  chartA = new Chart(document.getElementById('chartA').getContext('2d'), {
+    type: 'line',
+    data: { labels: MONTHS, datasets: buildADatasets(data) },
+    options: {
+      responsive:          true,
+      maintainAspectRatio: false,
+      animation:           { duration: 400, easing: 'easeInOutQuart' },
+      interaction:         { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#ffffff',
+          borderColor:     T.borderSubtle,
+          borderWidth:     1,
+          titleColor:      T.textPrimary,
+          bodyColor:       T.textMuted,
+          titleFont:       { family: T.fontBase, size: 12, weight: '700' },
+          bodyFont:        { family: T.fontBase, size: 12 },
+          padding:         12,
+          cornerRadius:    8,
+          boxPadding:      5,
+          usePointStyle:   true,
+          // Hide hidden series from tooltip
+          filter(item) {
+            return !item.dataset.hidden;
+          },
+          // Pinned series always last; district series sorted descending
+          itemSort(a, b) {
+            if (a.dataset._pinned && !b.dataset._pinned) return  1;
+            if (!a.dataset._pinned && b.dataset._pinned) return -1;
+            return b.parsed.y - a.parsed.y;
+          },
+          callbacks: {
+            title(items) { return items[0]?.label ?? ''; },
+            label(ctx) {
+              const val    = ctx.parsed.y;
+              const fVal   = fmtValue(val, state);
+              if (ctx.dataset._pinned) return `  ${ctx.dataset.label}: ${fVal}`;
+              // Show Δ vs city average
+              const cityDs  = ctx.chart.data.datasets.find(d => d.label === 'Media orașului');
+              const cityVal = cityDs?.data[ctx.dataIndex];
+              if (!cityVal) return `  ${ctx.dataset.label}: ${fVal}`;
+              const delta = ((val - cityVal) / cityVal) * 100;
+              const dStr  = delta >= 0
+                ? ` (+${delta.toFixed(1).replace('.', ',')}%)`
+                : ` (${delta.toFixed(1).replace('.', ',')}%)`;
+              return `  ${ctx.dataset.label}: ${fVal}${dStr}`;
+            },
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid:   { color: T.borderSubtle, drawTicks: false },
+          border: { display: false },
+          ticks:  {
+            color:         T.textMuted,
+            font:          { family: T.fontBase, size: 11 },
+            maxTicksLimit: 12,
+            maxRotation:   0,
+          },
+        },
+        y: {
+          grid:   { color: T.borderSubtle },
+          border: { display: false },
+          ticks:  {
+            color:    T.textMuted,
+            font:     { family: T.fontBase, size: 11 },
+            callback: v => fmtTick(v, state),
+          },
+        }
+      }
+    }
+  });
+
+  renderALegend();
+}
+
+/* ════════════════════════════════════════════════════════════
+   CHART B — HORIZONTAL BAR CHART
+   Bar length = current price/m²
+   Bar colour  = % change direction (success/danger/neutral)
+   Inline label at bar end = % change
+════════════════════════════════════════════════════════════ */
+let chartB = null;
+
+// Reference month indices (MONTHS array: 0=Mai'24 … 23=Apr'26)
+// YoY: Apr'26 vs Apr'25 (idx 23 vs 11)
+// MoM: Apr'26 vs Mar'26 (idx 23 vs 22)
+// YTD: Apr'26 vs Jan'25 (idx 23 vs 8)
+const PERIOD_REF = { yoy: 11, mom: 22, ytd: 8 };
+
+function initChartB(data) {
+  if (chartB) { chartB.destroy(); chartB = null; }
+
+  const lastIdx = MONTHS.length - 1;
+  const refIdx  = PERIOD_REF[state.period] ?? 11;
+
+  const entries = DISTRICTS.map((name, i) => {
+    const arr     = data.districts[name];
+    const current = arr[lastIdx];
+    const ref     = arr[refIdx];
+    const pct     = ref > 0 ? ((current - ref) / ref) * 100 : 0;
+    return { name, current, pct, color: T.districts[i] };
+  }).sort((a, b) => b.current - a.current); // descending by price
+
+  _chartBPcts = entries.map(e => e.pct);
+
+  // Dynamic canvas height based on bar count
+  const barH   = 44;
+  const vPad   = 28;
+  document.getElementById('chartBWrap').style.height = (entries.length * barH + vPad * 2) + 'px';
+
+  chartB = new Chart(document.getElementById('chartB').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels:   entries.map(e => e.name),
+      datasets: [{
+        data:            entries.map(e => e.current),
+        backgroundColor: entries.map(e => _barColor(e.pct)),
+        borderColor:     entries.map(e => _barColor(e.pct)),
+        borderWidth:     0,
+        borderRadius:    3,
+        borderSkipped:   'start',
+      }],
+    },
+    options: {
+      indexAxis:           'y',
+      responsive:          true,
+      maintainAspectRatio: false,
+      animation:           { duration: 400, easing: 'easeInOutQuart' },
+      layout:              { padding: { right: 60 } },
+      plugins: {
+        legend:  { display: false },
+        tooltip: {
+          backgroundColor: '#ffffff',
+          borderColor:     T.borderSubtle,
+          borderWidth:     1,
+          titleColor:      T.textPrimary,
+          bodyColor:       T.textMuted,
+          titleFont:       { family: T.fontBase, size: 12, weight: '700' },
+          bodyFont:        { family: T.fontBase, size: 12 },
+          padding:         10,
+          cornerRadius:    8,
+          callbacks: {
+            label(ctx) {
+              const pct = _chartBPcts[ctx.dataIndex];
+              return `  ${fmtValue(ctx.parsed.x, state)}  ·  ${fmtPct(pct)}`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid:        { color: T.borderSubtle },
+          border:      { display: false },
+          beginAtZero: true,
+          ticks: {
+            color:         T.textMuted,
+            font:          { family: T.fontBase, size: 11 },
+            maxTicksLimit: 6,
+            callback:      v => fmtTick(v, state),
+          },
+        },
+        y: {
+          grid:   { display: false },
+          border: { display: false },
+          ticks:  {
+            color: T.textPrimary,
+            font:  { family: T.fontBase, size: 12, weight: '600' },
+          },
+        }
+      }
+    }
+  });
+}
+
+/* ════════════════════════════════════════════════════════════
+   SUBTITLES & CAPTIONS
+════════════════════════════════════════════════════════════ */
+const ANA_LBL  = { pretMp:'Preț /m²', pretMedian:'Preț median', numarAnunturi:'Nr. anunțuri' };
+const PROP_LBL = { apartament:'Apartament', casa:'Casă', teren:'Teren' };
+const MKT_LBL  = { vanzare:'Vânzare', inchiriere:'Închiriere', primar:'Primar', secundar:'Secundar' };
+const RMS_LBL  = { toate:'Toate camerele', "1":'1 cameră', "2":'2 camere', "3":'3 camere', "4plus":'4+ camere' };
+const PER_CAP  = {
+  yoy: 'față de aceeași perioadă a anului anterior',
+  mom: 'față de luna precedentă',
+  ytd: 'de la 01/01/2025',
+};
+
+function updateLabels() {
+  const a = ANA_LBL[state.analysis];
+  document.getElementById('chartASubtitle').textContent =
+    `${a} · ${PROP_LBL[state.propertyType]} · ${MKT_LBL[state.market]} · ${RMS_LBL[state.rooms]} · Mai 2024 – Apr 2026`;
+  document.getElementById('chartBSubtitle').textContent =
+    `${a} — sectoarele Bucureștiului`;
+  document.getElementById('chartBCaption').textContent =
+    `${a} și variația procentuală ${PER_CAP[state.period]}`;
+}
+
+/* ════════════════════════════════════════════════════════════
+   RENDER — destroys and recreates both charts
+════════════════════════════════════════════════════════════ */
+function render() {
+  const data = getDataset(state);
+  initChartA(data);
+  initChartB(data);
+  updateLabels();
+}
+
+render(); // initial render
+
+/* ════════════════════════════════════════════════════════════
+   FILTER BAR INTERACTIONS
+════════════════════════════════════════════════════════════ */
+document.querySelectorAll('.filter-bar button.pill').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const filter = btn.dataset.filter;
+    const val    = btn.dataset.val;
+    if (state[filter] === val) return; // no-op if already active
+    state[filter] = val;
+
+    btn.closest('.filter-group').querySelectorAll('.pill').forEach(p =>
+      p.classList.toggle('active', p === btn)
+    );
+
+    hiddenDistricts.clear(); // fresh context, reset visibility
+    render();
+  });
+});
+
+/* Period toggle — only Chart B needs updating */
+document.querySelectorAll('.period-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (state.period === btn.dataset.period) return;
+    state.period = btn.dataset.period;
+
+    document.querySelectorAll('.period-btn').forEach(b =>
+      b.classList.toggle('active', b === btn)
+    );
+
+    const data = getDataset(state);
+    initChartB(data);
+    updateLabels();
+  });
+});
+
+/* ════════════════════════════════════════════════════════════
+   MOBILE FILTER TOGGLE
+════════════════════════════════════════════════════════════ */
+const CHIP_LABELS = {
+  propertyType: { casa: 'Casă', teren: 'Teren' },
+  market:       { inchiriere: 'Închiriere', primar: 'Primar', secundar: 'Secundar' },
+  rooms:        { "1": '1 cam.', "2": '2 cam.', "3": '3 cam.', "4plus": '4+ cam.' }
+};
+
+function updateMobileFilterUI() {
+  const countEl = document.getElementById('mobileFilterCount');
+  const chipsEl = document.getElementById('mobileActiveChips');
+  const btn     = document.getElementById('mobileFilterBtn');
+
+  const active = [
+    CHIP_LABELS.propertyType[state.propertyType],
+    CHIP_LABELS.market[state.market],
+    CHIP_LABELS.rooms[state.rooms]
+  ].filter(Boolean);
+
+  countEl.textContent = active.length || '';
+  btn.classList.toggle('has-active', active.length > 0);
+  chipsEl.innerHTML = active.map(l => `<span class="mobile-chip">${l}</span>`).join('');
+}
+
+document.getElementById('mobileFilterBtn').addEventListener('click', () => {
+  const panel  = document.getElementById('secondaryFilters');
+  const btn    = document.getElementById('mobileFilterBtn');
+  const isOpen = panel.classList.toggle('open');
+  btn.setAttribute('aria-expanded', isOpen);
+});
+
+// Patch filter bar interactions to also update mobile UI
+document.querySelectorAll('.filter-bar button.pill').forEach(btn => {
+  btn.addEventListener('click', updateMobileFilterUI);
+});
+
+updateMobileFilterUI();
+
+/* ════════════════════════════════════════════════════════════
+   RESPONSIVE CHART AXES
+════════════════════════════════════════════════════════════ */
+function applyResponsiveAxes() {
+  if (!chartA) return;
+  const mobile = window.innerWidth <= 640;
+  const tickSize = mobile ? 10 : 11;
+  chartA.options.scales.x.ticks.maxTicksLimit = mobile ? 6 : 12;
+  chartA.options.scales.x.ticks.font = { family: T.fontBase, size: tickSize };
+  chartA.options.scales.y.ticks.font = { family: T.fontBase, size: tickSize };
+  chartA.update('none');
+}
+
+window.addEventListener('resize', applyResponsiveAxes);
+applyResponsiveAxes();
+</script>
+</body>
+</html>

@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Indicele Imobiliare.ro pe regiuni</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Unbounded:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  /* ── Design tokens ── */
+  :root {
+    --primary: #e71e41;
+    --secondary: #048ba8;
+    --link: #0b778e;
+    --success: #81c14b;
+    --warning: #f18f01;
+    --error: #ed3928;
+    --text-heading: #111827;
+    --text-body: #374151;
+    --text-subtle: #4b5563;
+    --surface: #ffffff;
+    --surface-subtle: #f3f4f6;
+    --border: #d1d5db;
+    --radius-xs: 4px;
+    --radius-sm: 6px;
+    --radius-base: 8px;
+    --radius-lg: 12px;
+    --font-display: 'Unbounded', sans-serif;
+    --font-body: 'Manrope', sans-serif;
+    --scale-neg3: #e71e41;
+    --scale-neg2: #f28396;
+    --scale-neg1: #f8c0ca;
+    --scale-0:    #f0eeea;
+    --scale-pos1: #e6f3f6;
+    --scale-pos2: #9bd1dc;
+    --scale-pos3: #048ba8;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font-body);
+    background: #ffffff;
+    color: var(--text-body);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Section wrapper ── */
+  .map-section {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 64px 128px 96px;
+  }
+  @media (max-width: 1100px) { .map-section { padding: 48px 64px 80px; } }
+  @media (max-width: 768px)  { .map-section { padding: 32px 32px 64px; } }
+
+  /* ── Filter bar ── */
+  .filter-bar {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .filter-label {
+    font-size: 12px;
+    font-weight: 400;
+    color: #4b5563;
+    white-space: nowrap;
+  }
+  .filter-group {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+  .seg-row {
+    display: flex;
+    gap: 0;
+  }
+  .filter-btn {
+    position: relative;
+    z-index: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 16px;
+    margin-left: -1px;
+    min-width: 48px;
+    min-height: 48px;
+    background: #ffffff;
+    border: 1px solid #6b7280;
+    border-radius: 0;
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1;
+    color: #374151;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.12s, color 0.12s, border-color 0.12s;
+  }
+  .filter-btn:first-child { margin-left: 0; border-radius: 8px 0 0 8px; }
+  .filter-btn:last-child  { border-radius: 0 8px 8px 0; }
+  .filter-btn:only-child  { border-radius: 8px; }
+  .filter-btn:hover { color: #0b778e; }
+  .filter-btn:active { background: #9bd1dc; color: #0b778e; }
+  .filter-btn.active {
+    background: #e6f3f6;
+    color: #0b778e;
+    font-weight: 600;
+    border-color: #6b7280;
+    z-index: 1;
+  }
+  .filter-btn:focus-visible {
+    outline: none;
+    border-color: #048ba8;
+    border-width: 2px;
+    z-index: 2;
+  }
+  .period-group { margin-left: auto; }
+
+  /* ── Map container — full width ── */
+  .map-card {
+    background: #f3f4f6;
+    border-radius: 18px;
+    padding: 8px;
+  }
+  .map-container {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 24px 28px 20px;
+    box-shadow: 0px 2px 6px rgba(0,0,0,0.06), 0px 1px 2px rgba(0,0,0,0.04);
+    position: relative;
+  }
+
+  .map-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .map-title-small {
+    font-size: 12px;
+    font-weight: 400;
+    color: #4b5563;
+  }
+
+  /* ── SVG map ── */
+  #romania-svg {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .region-path {
+    stroke: #fff;
+    stroke-width: 2;
+    stroke-linejoin: round;
+    cursor: pointer;
+    transition: opacity 0.2s, filter 0.2s;
+  }
+  .region-path:hover { opacity: 0.82; filter: brightness(0.93); }
+  .region-path.dimmed { opacity: 0.6; filter: grayscale(80%); }
+  .region-path.selected { stroke: var(--text-heading); stroke-width: 3; }
+
+  /* City pins */
+  .city-pin {
+    cursor: pointer;
+    transition: transform 0.15s ease;
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+  .city-pin:hover { transform: scale(1.2); }
+  .city-pin circle.pin-outer { fill: var(--text-heading); }
+  .city-pin circle.pin-inner { fill: #fff; }
+  .city-pin text {
+    font-family: var(--font-body);
+    font-size: 9px;
+    font-weight: 700;
+    fill: var(--text-heading);
+    text-anchor: middle;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  /* ── Legend ── */
+  .legend {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+  .legend-label { font-size: 11px; color: var(--text-subtle); font-weight: 600; }
+  .legend-scale { display: flex; gap: 3px; align-items: center; }
+  .legend-swatch { width: 28px; height: 10px; border-radius: 2px; }
+  .legend-spacer { flex: 1; }
+
+  /* ── Rich popup card ── */
+  .region-popup {
+    position: absolute;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(17,24,39,0.16), 0 2px 8px rgba(17,24,39,0.07);
+    width: 272px;
+    z-index: 100;
+    overflow: hidden;
+    animation: popupIn 0.16s ease-out;
+  }
+  @keyframes popupIn {
+    from { opacity: 0; transform: scale(0.96) translateY(5px); }
+    to   { opacity: 1; transform: none; }
+  }
+  .popup-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px 10px;
+  }
+  .popup-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 800;
+    font-size: 16px;
+    color: var(--text-heading);
+    letter-spacing: -0.01em;
+  }
+  .popup-icon { color: #048ba8; flex-shrink: 0; }
+  .popup-close {
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: var(--text-subtle);
+    cursor: pointer;
+    padding: 0 2px;
+    line-height: 1;
+    font-weight: 400;
+  }
+  .popup-close:hover { color: var(--text-heading); }
+  .popup-price-section {
+    background: var(--surface-subtle);
+    padding: 12px 16px 14px;
+  }
+  .popup-price-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-subtle);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 4px;
+  }
+  .popup-price {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    line-height: 1.1;
+  }
+  .popup-price-val {
+    font-size: 30px;
+    font-weight: 800;
+    color: var(--text-heading);
+    letter-spacing: -0.04em;
+  }
+  .popup-price-unit {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-subtle);
+  }
+  .popup-vs-median {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 700;
+    margin-top: 7px;
+    padding: 3px 10px;
+    border-radius: 999px;
+  }
+  .popup-vs-median.pos { color: #166534; background: #dcfce7; }
+  .popup-vs-median.neg { color: #991b1b; background: #fee2e2; }
+  .popup-vs-median.neu { color: var(--text-subtle); background: var(--surface-subtle); }
+  .popup-sparkline-wrap {
+    padding: 10px 16px 8px;
+  }
+  .popup-spark-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--text-subtle);
+    margin-bottom: 5px;
+  }
+  #popup-sparkline-svg { display: block; overflow: visible; }
+  .popup-divider { height: 1px; background: var(--border); margin: 0; }
+  .popup-footer {
+    display: flex;
+    gap: 20px;
+    padding: 10px 16px 14px;
+    font-size: 12px;
+    color: var(--text-subtle);
+  }
+  .popup-footer strong { color: var(--text-heading); font-weight: 700; }
+  .trend-pos { color: #166534 !important; }
+  .trend-neg { color: #991b1b !important; }
+
+  /* ── Hover tooltip (lightweight, for quick scan) ── */
+  #tooltip {
+    position: fixed;
+    background: #ffffff;
+    color: var(--text-body);
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    font-size: 12px;
+    pointer-events: none;
+    display: none;
+    z-index: 1000;
+    min-width: 140px;
+    box-shadow: 0 4px 16px rgba(17,24,39,0.11);
+  }
+  #tooltip .tt-name { font-weight: 800; font-size: 12px; color: var(--text-heading); margin-bottom: 2px; }
+  #tooltip .tt-price { font-size: 11px; color: var(--text-subtle); }
+
+  /* ── Modal ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(17,24,39,0.5);
+    z-index: 2000;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(2px);
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    padding: 36px 32px;
+    max-width: 440px;
+    width: 90%;
+    box-shadow: 0 20px 60px rgba(17,24,39,0.2);
+    animation: modalIn 0.2s ease-out;
+  }
+  @keyframes modalIn {
+    from { opacity: 0; transform: translateY(12px) scale(0.98); }
+    to   { opacity: 1; transform: none; }
+  }
+  .modal-eyebrow {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-subtle);
+    margin-bottom: 8px;
+  }
+  .modal h3 {
+    font-family: var(--font-body);
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--text-heading);
+    letter-spacing: -0.02em;
+    margin-bottom: 12px;
+  }
+  .modal p {
+    font-size: 14px;
+    color: var(--text-subtle);
+    line-height: 1.6;
+    margin-bottom: 24px;
+  }
+  .modal-actions { display: flex; gap: 10px; }
+  .modal-primary {
+    flex: 1;
+    padding: 11px;
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-base);
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .modal-primary:hover { background: #c8183a; }
+  .modal-close-btn {
+    padding: 11px 16px;
+    background: var(--surface-subtle);
+    color: var(--text-body);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-base);
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .modal-close-btn:hover { background: #e5e7eb; }
+
+  /* ── Mobile ── */
+  @media (max-width: 900px) {
+    .period-group { margin-left: 0; }
+    .filter-btn { padding: 6px 10px; font-size: 12px; }
+    .map-container { padding: 16px; }
+    .region-popup { width: 240px; }
+    .popup-price-val { font-size: 24px; }
+  }
+  @media (max-width: 600px) {
+    .seg-row { flex-wrap: wrap; }
+    .map-container { padding: 12px; }
+    .modal { padding: 24px 18px; }
+    .modal-actions { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<section class="map-section">
+
+  <!-- Filter bar -->
+  <div class="filter-bar">
+    <div class="filter-group" id="type-filters">
+      <span class="filter-label">Tip proprietate</span>
+      <div class="seg-row">
+        <button class="filter-btn active" data-type="apartamente">Apartamente</button>
+        <button class="filter-btn" data-type="case">Case / Vile</button>
+        <button class="filter-btn" data-type="terenuri">Terenuri</button>
+        <button class="filter-btn" data-type="spatii">Spații comerciale</button>
+      </div>
+    </div>
+    <div class="filter-group period-group" id="period-filters">
+      <span class="filter-label">Perioadă</span>
+      <div class="seg-row">
+        <button class="filter-btn active" data-period="mom">MoM</button>
+        <button class="filter-btn" data-period="yoy">YoY</button>
+        <button class="filter-btn" data-period="price">Preț/m²</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Map — full width -->
+  <div class="map-card">
+  <div class="map-container">
+    <div class="map-toolbar">
+      <span class="map-title-small" id="map-toolbar-label">Regiuni de dezvoltare · Variație MoM</span>
+    </div>
+
+    <svg id="romania-svg" viewBox="0 0 620 500" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Harta județelor din România">
+      <g id="counties-layer"></g>
+      <g id="selected-group" pointer-events="none"></g>
+      <g id="map-labels" font-family="Manrope, sans-serif" fill="#374151" font-weight="700" text-anchor="middle" pointer-events="none"></g>
+      <g id="city-pins" style="display:none;"></g>
+    </svg>
+
+    <!-- Rich popup card -->
+    <div id="region-popup" class="region-popup" style="display:none">
+      <div class="popup-header">
+        <div class="popup-title">
+          <span id="popup-name">—</span>
+        </div>
+        <button class="popup-close" onclick="closePopup()" aria-label="Închide">×</button>
+      </div>
+
+      <div class="popup-price-section">
+        <div class="popup-price-label">Preț mediu/m²</div>
+        <div class="popup-price">
+          <span class="popup-price-val" id="popup-price-val">—</span>
+          <span class="popup-price-unit">RON/m²</span>
+        </div>
+        <div class="popup-vs-median" id="popup-vs-median">—</div>
+      </div>
+
+      <div class="popup-sparkline-wrap">
+        <div class="popup-spark-label">Evoluție 12 luni</div>
+        <svg id="popup-sparkline-svg" width="240" height="44" viewBox="0 0 240 44"></svg>
+      </div>
+
+      <div class="popup-divider"></div>
+
+      <div class="popup-footer">
+        <span>Anunțuri: <strong id="popup-sample">—</strong></span>
+        <span>Trend: <strong id="popup-trend">—</strong></span>
+      </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="legend" id="map-legend">
+      <span class="legend-label">Scădere</span>
+      <div class="legend-scale">
+        <div class="legend-swatch" style="background:var(--scale-neg3)"></div>
+        <div class="legend-swatch" style="background:var(--scale-neg2)"></div>
+        <div class="legend-swatch" style="background:var(--scale-neg1)"></div>
+        <div class="legend-swatch" style="background:var(--scale-0)"></div>
+        <div class="legend-swatch" style="background:var(--scale-pos1)"></div>
+        <div class="legend-swatch" style="background:var(--scale-pos2)"></div>
+        <div class="legend-swatch" style="background:var(--scale-pos3)"></div>
+      </div>
+      <span class="legend-label">Creștere</span>
+      <span class="legend-spacer"></span>
+      <span class="legend-label" style="font-size:10px; color:var(--text-subtle)">% față de perioada anterioară</span>
+    </div>
+  </div>
+  </div>
+
+</section>
+
+<!-- City modal -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModalOnBackdrop(event)">
+  <div class="modal">
+    <div class="modal-eyebrow" id="modal-eyebrow">Pagină dedicată</div>
+    <h3 id="modal-title">—</h3>
+    <p id="modal-body">—</p>
+    <div class="modal-actions">
+      <button class="modal-primary" id="modal-cta">Mergi la pagina orașului</button>
+      <button class="modal-close-btn" onclick="closeModal()">Închide</button>
+    </div>
+  </div>
+</div>
+
+<!-- Lightweight hover tooltip -->
+<div id="tooltip">
+  <div class="tt-name" id="tt-name"></div>
+  <div class="tt-price" id="tt-price"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+<script>
+// ── Mock data ──────────────────────────────────────────────────────────────────
+const DATA = {
+  apartamente: {
+    "nord-vest": {
+      name: "Nord-Vest",
+      price: 8450,
+      change1: +0.8, change3: +2.1, change6: +5.8, change12: +11.2,
+      sample: 3240,
+      history: [7200,7350,7420,7600,7750,7820,7900,8050,8150,8250,8380,8450],
+      cities: [
+        { id:"cluj", name:"Cluj-Napoca", x:230, y:175, price:11200, change1:+1.2, change12:+13.8, sample:1840 },
+        { id:"oradea", name:"Oradea", x:128, y:148, price:7100, change1:+0.7, change12:+8.2, sample:920 },
+        { id:"baia-mare", name:"Baia Mare", x:228, y:82, price:6400, change1:+0.6, change12:+7.5, sample:610 }
+      ]
+    },
+    "centru": {
+      name: "Centru",
+      price: 7820,
+      change1: +0.5, change3: +1.4, change6: +4.2, change12: +8.7,
+      sample: 2180,
+      history: [6800,6950,7050,7120,7280,7400,7500,7550,7620,7700,7770,7820],
+      cities: [
+        { id:"brasov", name:"Brașov", x:310, y:275, price:9400, change1:+0.8, change12:+10.2, sample:1020 },
+        { id:"sibiu", name:"Sibiu", x:240, y:262, price:8200, change1:+0.6, change12:+7.9, sample:780 },
+        { id:"tg-mures", name:"Târgu Mureș", x:270, y:185, price:7100, change1:+0.4, change12:+5.6, sample:540 }
+      ]
+    },
+    "nord-est": {
+      name: "Nord-Est",
+      price: 5240,
+      change1: -0.2, change3: -0.8, change6: +1.2, change12: +4.1,
+      sample: 2760,
+      history: [4900,4950,4980,5010,5080,5110,5140,5180,5200,5210,5240,5240],
+      cities: [
+        { id:"iasi", name:"Iași", x:452, y:118, price:7200, change1:+0.5, change12:+6.8, sample:1200 },
+        { id:"suceava", name:"Suceava", x:360, y:70, price:4800, change1:+0.2, change12:+2.1, sample:480 },
+        { id:"bacau", name:"Bacău", x:408, y:180, price:5600, change1:+0.3, change12:+4.0, sample:510 }
+      ]
+    },
+    "sud-est": {
+      name: "Sud-Est",
+      price: 5980,
+      change1: +0.2, change3: +0.5, change6: +2.8, change12: +6.3,
+      sample: 1940,
+      history: [5300,5380,5420,5500,5580,5650,5720,5780,5840,5890,5940,5980],
+      cities: [
+        { id:"constanta", name:"Constanța", x:525, y:428, price:7800, change1:+0.7, change12:+9.1, sample:890 },
+        { id:"galati", name:"Galați", x:488, y:298, price:5200, change1:+0.3, change12:+3.6, sample:560 },
+        { id:"braila", name:"Brăila", x:480, y:312, price:4900, change1:+0.2, change12:+2.4, sample:320 }
+      ]
+    },
+    "sud-muntenia": {
+      name: "Sud-Muntenia",
+      price: 5100,
+      change1: -0.4, change3: -1.2, change6: -2.4, change12: +1.8,
+      sample: 3100,
+      history: [4980,5020,5080,5120,5200,5250,5240,5210,5180,5140,5110,5100],
+      cities: [
+        { id:"ploiesti", name:"Ploiești", x:365, y:345, price:6100, change1:-0.3, change12:-3.5, sample:820 },
+        { id:"pitesti", name:"Pitești", x:292, y:355, price:5800, change1:-0.4, change12:-4.1, sample:680 },
+        { id:"targoviste", name:"Târgoviște", x:330, y:342, price:5200, change1:-0.5, change12:-5.8, sample:440 }
+      ]
+    },
+    "bucuresti": {
+      name: "București-Ilfov",
+      price: 13400,
+      change1: +1.1, change3: +3.2, change6: +7.5, change12: +14.8,
+      sample: 8420,
+      history: [10800,11200,11600,11900,12100,12300,12500,12700,12900,13100,13250,13400],
+      cities: [
+        { id:"bucuresti", name:"București", x:368, y:390, price:13400, change1:+1.1, change12:+14.8, sample:7800 },
+        { id:"ilfov", name:"Voluntari", x:380, y:378, price:11200, change1:+0.8, change12:+10.4, sample:620 }
+      ]
+    },
+    "sud-vest": {
+      name: "Sud-Vest Oltenia",
+      price: 4650,
+      change1: -0.7, change3: -2.1, change6: -3.8, change12: -0.5,
+      sample: 1620,
+      history: [4820,4800,4780,4760,4720,4700,4680,4660,4650,4640,4640,4650],
+      cities: [
+        { id:"craiova", name:"Craiova", x:208, y:408, price:5800, change1:-0.4, change12:-4.7, sample:820 },
+        { id:"drobeta", name:"Dr. Turnu Severin", x:150, y:378, price:4200, change1:-0.7, change12:-8.1, sample:280 },
+        { id:"ramnicu", name:"Rm. Vâlcea", x:238, y:352, price:4800, change1:-0.5, change12:-6.3, sample:310 }
+      ]
+    },
+    "vest": {
+      name: "Vest",
+      price: 7650,
+      change1: +0.6, change3: +1.8, change6: +4.9, change12: +9.4,
+      sample: 2050,
+      history: [6500,6620,6720,6880,7000,7100,7200,7320,7450,7530,7600,7650],
+      cities: [
+        { id:"timisoara", name:"Timișoara", x:82, y:282, price:9200, change1:+1.0, change12:+12.2, sample:1180 },
+        { id:"arad", name:"Arad", x:98, y:195, price:6400, change1:+0.5, change12:+6.4, sample:520 },
+        { id:"resita", name:"Reșița", x:92, y:320, price:5100, change1:+0.3, change12:+4.0, sample:240 }
+      ]
+    }
+  }
+};
+
+function buildVariant(scale, noiseLevel) {
+  const variant = {};
+  for (const [key, region] of Object.entries(DATA.apartamente)) {
+    const noise = () => 1 + (Math.random() - 0.5) * noiseLevel;
+    variant[key] = {
+      ...region,
+      price: Math.round(region.price * scale * noise()),
+      change1: +(region.change1 * (0.7 + Math.random() * 0.6)).toFixed(1),
+      change3: +(region.change3 * (0.7 + Math.random() * 0.6)).toFixed(1),
+      change6: +(region.change6 * (0.7 + Math.random() * 0.6)).toFixed(1),
+      change12: +(region.change12 * (0.7 + Math.random() * 0.6)).toFixed(1),
+      sample: Math.round(region.sample * scale * 0.4 * noise()),
+      history: region.history.map(v => Math.round(v * scale * noise())),
+      cities: region.cities.map(c => ({
+        ...c,
+        price: Math.round(c.price * scale * noise()),
+        change1: +(c.change1 * (0.7 + Math.random() * 0.6)).toFixed(1),
+        change12: +(c.change12 * (0.7 + Math.random() * 0.6)).toFixed(1),
+      }))
+    };
+  }
+  return variant;
+}
+
+DATA.case = buildVariant(1.25, 0.18);
+DATA.terenuri = buildVariant(0.38, 0.25);
+DATA.spatii = buildVariant(1.65, 0.22);
+
+// ── State ──────────────────────────────────────────────────────────────────────
+let currentType = 'apartamente';
+let currentPeriod = 'mom';
+let selectedRegion = null;
+
+// ── Color scale ────────────────────────────────────────────────────────────────
+function getColor(pct) {
+  if (pct <= -5)  return '#e8a99a';
+  if (pct <= -2)  return '#f0c4bb';
+  if (pct <  0)   return '#f7deda';
+  if (pct === 0)  return '#eae8e4';
+  if (pct <= 2)   return '#daeaee';
+  if (pct <= 5)   return '#b8d8e0';
+  return '#8fc3cf';
+}
+
+function getColorByPrice(price) {
+  const prices = Object.values(DATA[currentType]).map(r => r.price);
+  const min = Math.min(...prices);
+  const max = Math.max(...prices);
+  const t = (price - min) / (max - min || 1);
+  if (t < 0.2) return '#e6f3f6';
+  if (t < 0.4) return '#b8dce4';
+  if (t < 0.6) return '#6db8c8';
+  if (t < 0.8) return '#2d9db5';
+  return '#048ba8';
+}
+
+function getChangeKey() {
+  if (currentPeriod === 'yoy') return 'change12';
+  return 'change1';
+}
+
+function updateLegend() {
+  const el = document.getElementById('map-legend');
+  const toolbar = document.getElementById('map-toolbar-label');
+  if (toolbar) {
+    toolbar.textContent = currentPeriod === 'price'
+      ? 'Regiuni de dezvoltare · Preț median RON/m²'
+      : `Regiuni de dezvoltare · Variație ${currentPeriod === 'yoy' ? 'YoY' : 'MoM'}`;
+  }
+  if (!el) return;
+  if (currentPeriod === 'price') {
+    const prices = Object.values(DATA[currentType]).map(r => r.price);
+    const min = Math.min(...prices);
+    const max = Math.max(...prices);
+    const fmt = v => v.toLocaleString('ro-RO');
+    el.innerHTML = `
+      <span class="legend-label">${fmt(min)}</span>
+      <div class="legend-scale">
+        <div class="legend-swatch" style="background:#e6f3f6"></div>
+        <div class="legend-swatch" style="background:#b8dce4"></div>
+        <div class="legend-swatch" style="background:#6db8c8"></div>
+        <div class="legend-swatch" style="background:#2d9db5"></div>
+        <div class="legend-swatch" style="background:#048ba8"></div>
+      </div>
+      <span class="legend-label">${fmt(max)}</span>
+      <span class="legend-spacer"></span>
+      <span class="legend-label" style="font-size:10px; color:var(--text-subtle)">RON/m² — preț median</span>
+    `;
+  } else {
+    el.innerHTML = `
+      <span class="legend-label">Scădere</span>
+      <div class="legend-scale">
+        <div class="legend-swatch" style="background:var(--scale-neg3)"></div>
+        <div class="legend-swatch" style="background:var(--scale-neg2)"></div>
+        <div class="legend-swatch" style="background:var(--scale-neg1)"></div>
+        <div class="legend-swatch" style="background:var(--scale-0)"></div>
+        <div class="legend-swatch" style="background:var(--scale-pos1)"></div>
+        <div class="legend-swatch" style="background:var(--scale-pos2)"></div>
+        <div class="legend-swatch" style="background:var(--scale-pos3)"></div>
+      </div>
+      <span class="legend-label">Creștere</span>
+      <span class="legend-spacer"></span>
+      <span class="legend-label" style="font-size:10px; color:var(--text-subtle)">% față de perioada anterioară</span>
+    `;
+  }
+}
+
+// ── Render map ─────────────────────────────────────────────────────────────────
+function renderMap() {
+  const regions = DATA[currentType];
+  const key = getChangeKey();
+  for (const [id, region] of Object.entries(regions)) {
+    document.querySelectorAll(`[data-region="${id}"]`).forEach(el => {
+      el.style.fill = currentPeriod === 'price' ? getColorByPrice(region.price) : getColor(region[key]);
+    });
+  }
+  updateLegend();
+}
+
+// ── Hover tooltip (lightweight) ────────────────────────────────────────────────
+const tooltip = document.getElementById('tooltip');
+
+function showTooltip(e, regionId) {
+  if (selectedRegion) return; // suppress hover tooltip when a region is selected
+  const region = DATA[currentType][regionId];
+  if (!region) return;
+  document.getElementById('tt-name').textContent = region.name;
+  document.getElementById('tt-price').textContent = region.price.toLocaleString('ro-RO') + ' RON/m²';
+  positionTooltip(e);
+  tooltip.style.display = 'block';
+}
+
+function positionTooltip(e) {
+  tooltip.style.left = (e.clientX + 14) + 'px';
+  tooltip.style.top  = (e.clientY - 10) + 'px';
+}
+
+function hideTooltip() {
+  tooltip.style.display = 'none';
+}
+
+// ── Rich popup card ────────────────────────────────────────────────────────────
+function nationalMedian() {
+  const prices = Object.values(DATA[currentType]).map(r => r.price).sort((a, b) => a - b);
+  return prices[Math.floor(prices.length / 2)];
+}
+
+function showPopup(regionId, clickEvent) {
+  const region = DATA[currentType][regionId];
+  if (!region) return;
+
+  const key = getChangeKey();
+  const trend = region[key];
+  const median = nationalMedian();
+  const vsPct = (((region.price - median) / median) * 100).toFixed(1);
+
+  document.getElementById('popup-name').textContent = region.name;
+  document.getElementById('popup-price-val').textContent = region.price.toLocaleString('ro-RO');
+  document.getElementById('popup-sample').textContent = region.sample.toLocaleString('ro-RO');
+
+  const trendEl = document.getElementById('popup-trend');
+  trendEl.textContent = (trend > 0 ? '+' : '') + trend + '%';
+  trendEl.className = trend > 0 ? 'trend-pos' : trend < 0 ? 'trend-neg' : '';
+
+  const vsEl = document.getElementById('popup-vs-median');
+  const vsSign = vsPct > 0 ? '+' : '';
+  vsEl.textContent = `${vsSign}${vsPct}% față de medie`;
+  vsEl.className = 'popup-vs-median ' + (vsPct > 0 ? 'pos' : vsPct < 0 ? 'neg' : 'neu');
+
+  drawPopupSparkline(region.history);
+
+  // Position popup near click, keeping within map container
+  const popup = document.getElementById('region-popup');
+  popup.style.display = 'block';
+
+  const container = document.querySelector('.map-container');
+  const rect = container.getBoundingClientRect();
+  const popupW = 272;
+  const popupH = popup.offsetHeight || 260;
+
+  let left = clickEvent.clientX - rect.left + 16;
+  let top  = clickEvent.clientY - rect.top  - 40;
+
+  if (left + popupW > rect.width - 8)  left = rect.width - popupW - 8;
+  if (left < 8) left = 8;
+  if (top + popupH > rect.height - 8)  top = rect.height - popupH - 8;
+  if (top < 44) top = 44; // below toolbar
+
+  popup.style.left = left + 'px';
+  popup.style.top  = top  + 'px';
+}
+
+function closePopup() {
+  document.getElementById('region-popup').style.display = 'none';
+  resetView();
+}
+
+function drawPopupSparkline(data) {
+  const svg = document.getElementById('popup-sparkline-svg');
+  svg.innerHTML = '';
+  const w = 240, h = 44, pad = 3;
+  const min = Math.min(...data), max = Math.max(...data);
+  const range = max - min || 1;
+  const pts = data.map((v, i) => [
+    pad + (i / (data.length - 1)) * (w - pad * 2),
+    pad + (1 - (v - min) / range) * (h - pad * 2)
+  ]);
+  const ns = 'http://www.w3.org/2000/svg';
+
+  const area = document.createElementNS(ns, 'polygon');
+  area.setAttribute('points', [[pts[0][0], h], ...pts, [pts[pts.length-1][0], h]].map(p => p.join(',')).join(' '));
+  area.setAttribute('fill', 'rgba(4,139,168,0.1)');
+  svg.appendChild(area);
+
+  const line = document.createElementNS(ns, 'polyline');
+  line.setAttribute('points', pts.map(p => p.join(',')).join(' '));
+  line.setAttribute('fill', 'none');
+  line.setAttribute('stroke', '#048ba8');
+  line.setAttribute('stroke-width', '1.8');
+  line.setAttribute('stroke-linejoin', 'round');
+  svg.appendChild(line);
+
+  const dot = document.createElementNS(ns, 'circle');
+  dot.setAttribute('cx', pts[pts.length-1][0]);
+  dot.setAttribute('cy', pts[pts.length-1][1]);
+  dot.setAttribute('r', '3');
+  dot.setAttribute('fill', '#048ba8');
+  svg.appendChild(dot);
+}
+
+// ── Selected-group overlay ─────────────────────────────────────────────────────
+function updateSelectedGroup(regionId) {
+  const group = document.getElementById('selected-group');
+  group.innerHTML = '';
+  if (!regionId) return;
+  group.setAttribute('style', 'filter: drop-shadow(0 0 6px rgba(17,24,39,0.35))');
+  document.querySelectorAll(`.region-path[data-region="${regionId}"]`).forEach(p => {
+    const clone = p.cloneNode(false);
+    clone.style.opacity = '1';
+    clone.style.filter = '';
+    clone.setAttribute('stroke', '#111827');
+    clone.setAttribute('stroke-width', '2.5');
+    group.appendChild(clone);
+  });
+}
+
+// ── Region click ───────────────────────────────────────────────────────────────
+function selectRegion(regionId, clickEvent) {
+  selectedRegion = regionId;
+  const region = DATA[currentType][regionId];
+  if (!region) return;
+
+  document.querySelectorAll('.region-path').forEach(p => {
+    p.classList.toggle('dimmed', p.dataset.region !== regionId);
+    p.classList.remove('selected');
+  });
+
+  updateSelectedGroup(regionId);
+  showCities(region.cities, regionId);
+  if (clickEvent) showPopup(regionId, clickEvent);
+}
+
+function showCities(cities, regionId) {
+  const group = document.getElementById('city-pins');
+  group.innerHTML = '';
+  group.style.display = 'block';
+
+  cities.forEach(city => {
+    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    g.setAttribute('class', 'city-pin');
+    g.setAttribute('data-city', city.id);
+    g.setAttribute('data-region', regionId);
+    g.setAttribute('role', 'button');
+    g.setAttribute('aria-label', city.name);
+
+    const outer = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    outer.setAttribute('class', 'pin-outer');
+    outer.setAttribute('cx', city.x); outer.setAttribute('cy', city.y); outer.setAttribute('r', '7');
+    g.appendChild(outer);
+
+    const inner = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    inner.setAttribute('class', 'pin-inner');
+    inner.setAttribute('cx', city.x); inner.setAttribute('cy', city.y); inner.setAttribute('r', '3.5');
+    g.appendChild(inner);
+
+    const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    label.setAttribute('x', city.x);
+    label.setAttribute('y', city.y - 11);
+    label.textContent = city.name;
+    g.appendChild(label);
+
+    g.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openCityModal(city);
+    });
+
+    group.appendChild(g);
+  });
+}
+
+// ── Reset ──────────────────────────────────────────────────────────────────────
+function resetView() {
+  selectedRegion = null;
+  document.querySelectorAll('.region-path').forEach(p => {
+    p.classList.remove('dimmed', 'selected');
+  });
+  updateSelectedGroup(null);
+  document.getElementById('city-pins').style.display = 'none';
+  document.getElementById('city-pins').innerHTML = '';
+  hideTooltip();
+}
+
+// ── Modal ──────────────────────────────────────────────────────────────────────
+function openCityModal(city) {
+  document.getElementById('modal-eyebrow').textContent = 'Pagina orașului';
+  document.getElementById('modal-title').textContent = city.name;
+  document.getElementById('modal-body').textContent =
+    `Pagina dedicată pentru ${city.name} cu toate proprietățile disponibile, evoluția prețurilor și analize de piață.`;
+  document.getElementById('modal-cta').textContent = `Mergi la ${city.name} →`;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+
+function closeModalOnBackdrop(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeModal();
+}
+
+// ── County → development region mapping ───────────────────────────────────────
+const COUNTY_REGION = {
+  'Alba': 'centru', 'Arad': 'vest', 'Arges': 'sud-muntenia',
+  'Bacau': 'nord-est', 'Bihor': 'nord-vest', 'Bistrita-Nasaud': 'nord-vest',
+  'Botosani': 'nord-est', 'Braila': 'sud-est', 'Brasov': 'centru',
+  'Bucuresti': 'bucuresti', 'Buzau': 'sud-est', 'Calarasi': 'sud-muntenia',
+  'Cluj': 'nord-vest', 'Constanta': 'sud-est', 'Covasna': 'centru',
+  'Dambovita': 'sud-muntenia', 'Dolj': 'sud-vest', 'Galati': 'sud-est',
+  'Giurgiu': 'sud-muntenia', 'Gorj': 'sud-vest', 'Harghita': 'centru',
+  'Hunedoara': 'vest', 'Ialomita': 'sud-muntenia', 'Iasi': 'nord-est',
+  'Ilfov': 'bucuresti', 'Maramures': 'nord-vest', 'Mehedinti': 'sud-vest',
+  'Mures': 'centru', 'Neamt': 'nord-est', 'Olt': 'sud-vest',
+  'Prahova': 'sud-muntenia', 'Salaj': 'nord-vest', 'Satu Mare': 'nord-vest',
+  'Sibiu': 'centru', 'Suceava': 'nord-est', 'Teleorman': 'sud-muntenia',
+  'Timis': 'vest', 'Tulcea': 'sud-est', 'Vaslui': 'nord-est',
+  'Valcea': 'sud-vest', 'Vrancea': 'sud-est'
+};
+
+const COUNTY_LABELS = {
+  'Bucuresti': 'București', 'Cluj': 'Cluj', 'Iasi': 'Iași',
+  'Timis': 'Timișoara', 'Constanta': 'Constanța', 'Brasov': 'Brașov',
+  'Dolj': 'Craiova', 'Sibiu': 'Sibiu'
+};
+
+// ── Map init ───────────────────────────────────────────────────────────────────
+function bindCountyEvents(pathEl, regionId) {
+  pathEl.addEventListener('mouseenter', e => showTooltip(e, regionId));
+  pathEl.addEventListener('mousemove', positionTooltip);
+  pathEl.addEventListener('mouseleave', hideTooltip);
+  pathEl.addEventListener('click', e => { hideTooltip(); selectRegion(regionId, e); });
+}
+
+function initMap() {
+  const projection = d3.geoTransform({
+    point: function(lon, lat) {
+      this.stream.point((lon - 20.26) * 64 + 20, (48.27 - lat) * 104 + 20);
+    }
+  });
+  const geoPath = d3.geoPath().projection(projection);
+  const layer = document.getElementById('counties-layer');
+  const labelsLayer = document.getElementById('map-labels');
+
+  fetch('https://raw.githubusercontent.com/GabrielRondelli/geojson/main/romania-counties.geojson')
+    .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(geojson => {
+      geojson.features.forEach(feature => {
+        const name = feature.properties.NAME_1;
+        const regionId = COUNTY_REGION[name];
+        if (!regionId) return;
+
+        const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        pathEl.setAttribute('d', geoPath(feature) || '');
+        pathEl.setAttribute('class', 'region-path');
+        pathEl.setAttribute('data-region', regionId);
+        pathEl.style.fill = '#eae8e4';
+        pathEl.style.stroke = '#fff';
+        pathEl.style.strokeWidth = '0.7';
+        pathEl.style.cursor = 'pointer';
+        layer.appendChild(pathEl);
+        bindCountyEvents(pathEl, regionId);
+
+        if (COUNTY_LABELS[name]) {
+          const c = geoPath.centroid(feature);
+          if (c && !isNaN(c[0])) {
+            const area = geoPath.area(feature);
+            const sz = Math.max(8, Math.min(11, 7 + area * 0.004));
+            const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            t.setAttribute('x', c[0]);
+            t.setAttribute('y', c[1] + 4);
+            t.setAttribute('font-size', sz);
+            t.textContent = COUNTY_LABELS[name];
+            labelsLayer.appendChild(t);
+          }
+        }
+      });
+      renderMap();
+      selectRegion('bucuresti');
+      // open popup in default position for București
+      const firstPath = document.querySelector('[data-region="bucuresti"]');
+      if (firstPath) {
+        const bbox = firstPath.getBoundingClientRect();
+        showPopup('bucuresti', { clientX: bbox.left + bbox.width / 2, clientY: bbox.top });
+      }
+    })
+    .catch(() => {
+      layer.innerHTML = `
+        <path class="region-path" data-region="nord-vest" d="M130,52L215,38L352,25L352,148L180,185L152,202L110,132Z"/>
+        <path class="region-path" data-region="centru" d="M180,185L352,148L395,265L335,300L248,298L152,258L152,202Z"/>
+        <path class="region-path" data-region="vest" d="M110,132L152,202L152,258L80,352L18,270L48,192Z"/>
+        <path class="region-path" data-region="nord-est" d="M352,25L480,32L512,118L510,210L395,265L352,148Z"/>
+        <path class="region-path" data-region="sud-est" d="M510,210L505,288L595,312L595,390L537,462L470,458L410,455L335,300L395,265Z"/>
+        <path class="region-path" data-region="sud-muntenia" d="M410,455L352,452L278,452L248,298L335,300Z"/>
+        <path class="region-path" data-region="sud-vest" d="M80,352L152,258L248,298L278,452L165,445L145,372Z"/>
+        <path class="region-path" data-region="bucuresti" d="M358,372L388,365L400,390L378,415L350,410L347,388Z"/>
+      `;
+      layer.querySelectorAll('.region-path').forEach(p => {
+        bindCountyEvents(p, p.dataset.region);
+      });
+      renderMap();
+      selectRegion('bucuresti');
+      const firstPath = document.querySelector('[data-region="bucuresti"]');
+      if (firstPath) {
+        const bbox = firstPath.getBoundingClientRect();
+        showPopup('bucuresti', { clientX: bbox.left + bbox.width / 2, clientY: bbox.top });
+      }
+    });
+}
+
+// ── Event listeners ────────────────────────────────────────────────────────────
+document.querySelectorAll('#type-filters .filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#type-filters .filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentType = btn.dataset.type;
+    renderMap();
+    if (selectedRegion) selectRegion(selectedRegion);
+  });
+});
+
+document.querySelectorAll('#period-filters .filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#period-filters .filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentPeriod = btn.dataset.period;
+    renderMap();
+    if (selectedRegion) selectRegion(selectedRegion);
+  });
+});
+
+// Close popup when clicking on map background
+document.getElementById('romania-svg').addEventListener('click', e => {
+  if (e.target === e.currentTarget || e.target.id === 'romania-svg') {
+    closePopup();
+  }
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    closeModal();
+    closePopup();
+  }
+});
+
+initMap();
+</script>
+</body>
+</html>

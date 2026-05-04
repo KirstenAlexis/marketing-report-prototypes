@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Marketing Report Prototypes — Imobiliare.ro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary:        #e71e41;
+      --primary-dark:   #c8152f;
+      --secondary:      #048ba8;
+      --text-heading:   #2b2b2b;
+      --text-body:      #374151;
+      --text-muted:     #6b7280;
+      --surface:        #ffffff;
+      --surface-bg:     #f9f9f9;
+      --border:         #e5e7eb;
+      --footer-bg:      #111827;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Manrope', sans-serif;
+      background: var(--surface-bg);
+      color: var(--text-body);
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    a { color: inherit; text-decoration: none; }
+
+    /* NAV */
+    .site-nav {
+      background: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      height: 56px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav-brand {
+      font-size: 15px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.3px;
+    }
+    .nav-brand span { opacity: 0.75; font-weight: 500; }
+
+    /* HERO */
+    .hero {
+      background: var(--primary);
+      color: #fff;
+      padding: 52px 32px 48px;
+      text-align: center;
+    }
+    .hero-eyebrow {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      opacity: 0.75;
+      margin-bottom: 12px;
+    }
+    .hero h1 {
+      font-size: clamp(26px, 4vw, 40px);
+      font-weight: 800;
+      letter-spacing: -0.8px;
+      line-height: 1.2;
+      margin-bottom: 14px;
+    }
+    .hero p {
+      font-size: 15px;
+      opacity: 0.85;
+      max-width: 540px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* GRID */
+    .grid-section {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 48px 24px 64px;
+      flex: 1;
+    }
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    /* CARD */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      transition: box-shadow 0.18s ease, transform 0.18s ease;
+      display: flex;
+      flex-direction: column;
+    }
+    .card:hover {
+      box-shadow: 0 8px 24px rgba(0,0,0,0.10);
+      transform: translateY(-2px);
+    }
+    .card.featured {
+      grid-column: 1 / -1;
+      flex-direction: row;
+      align-items: stretch;
+    }
+    .card-thumb {
+      background: linear-gradient(135deg, #fce4e9 0%, #fdeef5 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 140px;
+      font-size: 40px;
+    }
+    .card.featured .card-thumb {
+      min-width: 220px;
+      min-height: unset;
+      border-radius: 0;
+    }
+    .card-thumb.blue  { background: linear-gradient(135deg, #dbeafe 0%, #e0f2fe 100%); }
+    .card-thumb.teal  { background: linear-gradient(135deg, #ccfbf1 0%, #d1fae5 100%); }
+    .card-thumb.amber { background: linear-gradient(135deg, #fef9c3 0%, #fef3c7 100%); }
+    .card-thumb.purple { background: linear-gradient(135deg, #ede9fe 0%, #f3e8ff 100%); }
+    .card-thumb.slate { background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%); }
+
+    .card-body {
+      padding: 20px 22px 22px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .card-tag {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--primary);
+      margin-bottom: 8px;
+    }
+    .card.featured .card-tag { color: var(--primary); }
+    .card h2 {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text-heading);
+      letter-spacing: -0.3px;
+      line-height: 1.35;
+      margin-bottom: 8px;
+    }
+    .card.featured h2 { font-size: 22px; }
+    .card p {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      flex: 1;
+      margin-bottom: 20px;
+    }
+    .card-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--primary);
+      transition: gap 0.15s ease;
+    }
+    .card-link:hover { gap: 10px; }
+    .card-link svg { flex-shrink: 0; }
+
+    /* FOOTER */
+    footer {
+      background: var(--footer-bg);
+      color: rgba(255,255,255,0.45);
+      text-align: center;
+      font-size: 12px;
+      padding: 20px 24px;
+    }
+
+    @media (max-width: 640px) {
+      .card.featured { flex-direction: column; }
+      .card.featured .card-thumb { min-width: unset; min-height: 120px; }
+      .hero { padding: 40px 20px 36px; }
+      .grid-section { padding: 32px 16px 48px; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="site-nav">
+    <div class="nav-brand">Imobiliare.ro <span>/ Prototypes</span></div>
+  </nav>
+
+  <div class="hero">
+    <div class="hero-eyebrow">Internal Preview</div>
+    <h1>Marketing Report Prototypes</h1>
+    <p>Interactive dashboards and data visualisations for Romania's property market reports.</p>
+  </div>
+
+  <section class="grid-section">
+    <div class="section-label">All Prototypes</div>
+    <div class="grid">
+
+      <!-- FEATURED -->
+      <a class="card featured" href="indicele-imobiliare-prototype.html">
+        <div class="card-thumb" aria-hidden="true">📊</div>
+        <div class="card-body">
+          <span class="card-tag">Featured</span>
+          <h2>Indicele Imobiliare.ro</h2>
+          <p>Full marketing report prototype — national property price index with KPIs, trend charts, city breakdowns, and editorial sections.</p>
+          <span class="card-link">
+            View prototype
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+        </div>
+      </a>
+
+      <!-- BUCHAREST APARTMENTS -->
+      <a class="card" href="bucharest-apartments-chart.html">
+        <div class="card-thumb blue" aria-hidden="true">🏙️</div>
+        <div class="card-body">
+          <span class="card-tag">Chart</span>
+          <h2>Bucharest Apartments</h2>
+          <p>Price trends for Bucharest apartments across districts, with interactive filters and time-series charts.</p>
+          <span class="card-link">
+            View chart
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+        </div>
+      </a>
+
+      <!-- ROMANIA APARTMENTS -->
+      <a class="card" href="romania-apartments-chart.html">
+        <div class="card-thumb teal" aria-hidden="true">🇷🇴</div>
+        <div class="card-body">
+          <span class="card-tag">Chart</span>
+          <h2>Romania Apartments</h2>
+          <p>National apartment price chart comparing major cities across Romania with trend and volume data.</p>
+          <span class="card-link">
+            View chart
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+        </div>
+      </a>
+
+      <!-- DISTRICT CHART -->
+      <a class="card" href="district-chart.html">
+        <div class="card-thumb amber" aria-hidden="true">🗺️</div>
+        <div class="card-body">
+          <span class="card-tag">Chart</span>
+          <h2>District Chart</h2>
+          <p>Bucharest district-level price breakdown with comparative bar charts and ranking visualisation.</p>
+          <span class="card-link">
+            View chart
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+        </div>
+      </a>
+
+      <!-- ROMANIA PRICE MAP V2 -->
+      <a class="card" href="romania-price-map-V2-larger-map.html">
+        <div class="card-thumb purple" aria-hidden="true">📍</div>
+        <div class="card-body">
+          <span class="card-tag">Map</span>
+          <h2>Romania Price Map V2</h2>
+          <p>Interactive choropleth map of Romania showing average property prices by județ — larger map variant.</p>
+          <span class="card-link">
+            View map
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+        </div>
+      </a>
+
+      <!-- ROMANIA PRICE MAP -->
+      <a class="card" href="romania-price-map.html">
+        <div class="card-thumb slate" aria-hidden="true">🗺️</div>
+        <div class="card-body">
+          <span class="card-tag">Map</span>
+          <h2>Romania Price Map</h2>
+          <p>Interactive property price map of Romania with județ-level detail and tooltip breakdowns.</p>
+          <span class="card-link">
+            View map
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+        </div>
+      </a>
+
+    </div>
+  </section>
+
+  <footer>
+    &copy; 2025 Imobiliare.ro — Internal prototype preview
+  </footer>
+
+</body>
+</html>

@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Indicele Imobiliare.ro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* ── DESIGN TOKENS ──────────────────────────────────────────── */
+    :root {
+      --primary:          #e71e41;
+      --primary-text:     #d62444;
+      --secondary:        #048ba8;
+      --secondary-dark:   #0b778e;
+      --text-heading:     #2b2b2b;
+      --text-headings-alt:#111827;
+      --text-body:        #374151;
+      --text-subtle:      #4b5563;
+      --text-muted:       #6b7280;
+      --surface:          #ffffff;
+      --surface-subtle:   #f9fafb;
+      --surface-bg:       #f9f9f9;
+      --border:           #d1d5db;
+      --border-strong:    #6b7280;
+      --kpi-bg:           #f3f4f6;
+      --badge-pos-bg:     #ecfccb;
+      --badge-pos-text:   #3f6212;
+      --badge-neg-bg:     #fee7e4;
+      --badge-neg-text:   #b91c1c;
+      --footer-bg:        #111827;
+      --nav-height:       64px;
+    }
+
+    /* ── RESET ──────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Manrope', sans-serif;
+      background: var(--surface-bg);
+      color: var(--text-body);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    a { color: inherit; text-decoration: none; }
+    button { cursor: pointer; font-family: inherit; border: none; background: none; }
+    img { display: block; max-width: 100%; }
+
+    /* ── NAVIGATION ─────────────────────────────────────────────── */
+    .site-nav {
+      background: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      box-shadow: 0 2px 3px rgba(0,0,0,0.06), 0 1px 1px rgba(0,0,0,0.04);
+    }
+    .nav-leading {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-shrink: 0;
+    }
+    .nav-hamburger {
+      width: 24px; height: 24px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; flex-shrink: 0; border-radius: 4px;
+      background: none; border: none; padding: 0;
+      overflow: hidden;
+    }
+    /* Icon is 18×12px, centred inside the 24×24 touch target */
+    .nav-hamburger img { width: 18px; height: 12px; display: block; }
+    .nav-logo-wrap {
+      display: flex; align-items: center;
+      height: 40px; padding: 8.2px 0; flex-shrink: 0;
+    }
+    .nav-logo { height: 23.587px; width: 194px; display: block; object-fit: contain; }
+
+    .nav-trailing {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+    .nav-btn-add {
+      display: flex; align-items: center; gap: 8px;
+      background: white;
+      color: var(--primary-text);
+      font-size: 14px; font-weight: 600;
+      padding: 8px 16px;
+      border-radius: 6px;
+      white-space: nowrap;
+      line-height: 14px;
+      height: 36px;
+      transition: opacity 0.15s;
+    }
+    .nav-btn-add:hover { opacity: 0.9; }
+    .nav-btn-add svg { flex-shrink: 0; }
+    /* Full label (desktop only) */
+    .nav-btn-label-short { display: none; }
+    .nav-btn-label-full  { display: inline; }
+    .nav-links {
+      display: flex; align-items: center; gap: 0;
+      height: 28px;
+    }
+    .nav-link {
+      color: white;
+      font-size: 14px; font-weight: 400; line-height: 14px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      white-space: nowrap;
+      transition: background 0.15s;
+    }
+    .nav-link:hover { background: rgba(255,255,255,0.12); }
+
+    /* Tablet: abbreviated button label, 16px side padding */
+    @media (max-width: 1100px) {
+      .site-nav { padding: 12px 16px; }
+      .nav-btn-label-full  { display: none; }
+      .nav-btn-label-short { display: inline; }
+    }
+    /* Mobile: hide auth links, shrink logo */
+    @media (max-width: 767px) {
+      .nav-links { display: none; }
+      .nav-logo { height: 16.511px; width: 135.8px; }
+      .nav-logo-wrap { height: 28px; padding: 5.745px 0; }
+    }
+
+    /* ── INTRO SECTION ──────────────────────────────────────────── */
+    .intro-section {
+      background: var(--surface-subtle);
+      /* Centre content at 1200px on wide viewports; min 24px gutter */
+      padding: 32px max(24px, calc((100% - 1200px) / 2)) 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    @media (max-width: 768px) { .intro-section { padding: 20px 16px 16px; } }
+
+    /* Breadcrumbs */
+    .breadcrumbs {
+      display: flex; align-items: center; gap: 2px;
+      padding: 6px 0;
+    }
+    .bc-icon { width: 16px; height: 16px; display: block; flex-shrink: 0; color: var(--text-subtle); }
+    .bc-sep  { width: 12px; height: 12px; display: block; flex-shrink: 0; color: var(--text-subtle); }
+    /* Each crumb is a flex group — chevron lives inside alongside the text */
+    .bc-item {
+      display: flex; align-items: center; gap: 4px;
+      flex-shrink: 0;
+    }
+    .bc-text {
+      font-size: 12px; line-height: 12px; color: var(--text-subtle);
+      font-weight: 400; white-space: nowrap; text-decoration: none;
+    }
+    .bc-item.current .bc-text { font-weight: 600; }
+
+    /* Title */
+    .page-title-area { display: flex; flex-direction: column; gap: 8px; }
+    .page-h1 {
+      font-size: 36px; font-weight: 700;
+      color: var(--text-heading);
+      letter-spacing: -0.4px; line-height: 40px;
+    }
+    @media (max-width: 768px) { .page-h1 { font-size: 26px; line-height: 32px; } }
+    .page-meta { display: flex; align-items: center; gap: 4px; }
+    .page-meta img { width: 20px; height: 20px; }
+    .meta-label { font-size: 14px; font-weight: 400; color: var(--text-subtle); }
+    .meta-value { font-size: 14px; font-weight: 600; color: var(--secondary-dark); }
+
+    /* ── QUICKLINKS BAR (sticky) ────────────────────────────────── */
+    .quicklinks-bar {
+      position: sticky;
+      top: calc(var(--nav-height) + 24px);
+      z-index: 150;
+      display: flex;
+      justify-content: center;
+      padding: 0 24px;
+      pointer-events: none; /* transparent zone passes clicks through */
+    }
+    .quicklinks {
+      pointer-events: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 16px; /* --spacing/xl = 16px per Figma */
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 9999px;
+      padding: 8px 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      max-width: 100%;
+    }
+    .quicklinks::-webkit-scrollbar { display: none; }
+    .ql-chip {
+      color: var(--text-headings-alt);
+      font-size: 16px; font-weight: 400;
+      padding: 8px 16px;
+      border-radius: 9999px;
+      white-space: nowrap;
+      transition: background 0.15s, color 0.15s;
+      line-height: 24px; /* h-[24px] inner container per Figma → chip = 40px, pill = 56px */
+    }
+    .ql-chip:hover:not(.active) { background: var(--kpi-bg); }
+    .ql-chip.active {
+      background: var(--secondary-dark);
+      color: white;
+    }
+    @media (max-width: 767px) {
+      /* Bar scrolls horizontally — pill extends off the right edge */
+      .quicklinks-bar {
+        justify-content: flex-start;
+        padding: 0 0 0 16px; /* left edge only, no right constraint */
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        pointer-events: auto; /* needed for touch-scroll on the bar */
+      }
+      .quicklinks-bar::-webkit-scrollbar { display: none; }
+      .quicklinks {
+        flex-shrink: 0;   /* don't squash — hold natural width */
+        max-width: none;  /* allow pill to extend beyond viewport */
+        overflow: visible; /* scroll is on the parent bar, not inside */
+      }
+      .ql-chip { font-size: 14px; padding: 6px 12px; }
+    }
+
+    /* Editorial section — same background as intro, sits after sticky quicklinks */
+    .editorial-section {
+      background: var(--surface-subtle);
+      padding: 24px max(24px, calc((100% - 1200px) / 2)) 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    @media (max-width: 768px) { .editorial-section { padding: 20px 16px 28px; } }
+
+    /* Editorial text */
+    .editorial-lead {
+      font-size: 20px; font-weight: 600;
+      color: var(--text-body); line-height: 28px;
+    }
+    .editorial-body {
+      font-size: 18px; font-weight: 500;
+      color: var(--text-body); line-height: 24px;
+    }
+    .editorial-body p + p { margin-top: 16px; }
+    @media (max-width: 768px) {
+      .editorial-lead { font-size: 16px; line-height: 24px; }
+      .editorial-body { font-size: 15px; line-height: 22px; }
+    }
+
+    /* ── DATA SECTIONS (white bg) ────────────────────────────────── */
+    .data-section { background: white; }
+    .data-section.chart-section { padding-bottom: 32px; }
+    @media (max-width: 768px) { .data-section.chart-section { padding-bottom: 12px; } }
+
+    .section-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    @media (max-width: 768px) { .section-container { padding: 20px 16px; } }
+
+    /* Section header */
+    .section-header { display: flex; flex-direction: column; gap: 0; padding-top: 5px; }
+    .section-eyebrow { display: flex; align-items: center; gap: 7px; }
+    .eyebrow-dot {
+      width: 7px; height: 7px; border-radius: 3.5px;
+      background: var(--primary); flex-shrink: 0;
+    }
+    .eyebrow-text {
+      font-size: 12px; font-weight: 600;
+      color: var(--primary-text);
+      text-transform: uppercase;
+      letter-spacing: 0.96px;
+    }
+    .section-h2 {
+      font-size: 28px; font-weight: 600;
+      color: var(--text-heading);
+      line-height: 32px;
+      margin-top: 10px;
+    }
+    @media (max-width: 768px) { .section-h2 { font-size: 20px; line-height: 26px; } }
+
+    /* ── CHART IFRAME EMBED ──────────────────────────────────────── */
+    /* Full-viewport-width strip. Clips internal padding from graph files by
+       shifting the iframe up (top: -Npx) and using margin-bottom = -(top + bot)
+       so the strip auto-heights to the visible content without explicit height. */
+    .chart-strip {
+      position: relative;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100vw;
+      overflow: hidden;
+    }
+    .chart-strip iframe {
+      display: block;
+      width: 100%;
+      border: none;
+      height: 800px; /* CSS fallback; JS overrides via style.height */
+      position: relative;
+      /* Desktop: graph top-pad=64px, bottom-pad=96px → clip both */
+      top: -64px;
+      margin-bottom: -160px; /* -(64 + 96) */
+    }
+    /* Map strip: bottom-pad=32px in map file. Fallback is generous so content
+       isn't clipped before postMessage resize fires. */
+    .chart-strip.map-strip iframe {
+      height: 1000px;
+      margin-bottom: -96px; /* desktop: -(64top + 32bot) */
+    }
+
+    @media (max-width: 1100px) {
+      /* Tablet: top-pad=48px, bottom-pad=80px (apartments/houses) */
+      .chart-strip iframe {
+        top: -48px;
+        margin-bottom: -128px; /* -(48 + 80) */
+      }
+      /* Map: bottom-pad=32px */
+      .chart-strip.map-strip iframe {
+        margin-bottom: -80px; /* -(48 + 32) */
+      }
+    }
+    @media (max-width: 768px) {
+      /* Mobile: top-pad=32px, bottom-pad=64px (apartments/houses) */
+      .chart-strip iframe {
+        top: -32px;
+        margin-bottom: -96px; /* -(32 + 64) */
+        height: 1000px; /* taller fallback — KPI cards stack on mobile */
+      }
+      /* Map: bottom-pad=32px */
+      .chart-strip.map-strip iframe {
+        margin-bottom: -64px; /* -(32 + 32) */
+        height: 900px;
+      }
+    }
+
+    /* ── METHODOLOGY ─────────────────────────────────────────────── */
+    .methodology-section { background: white; }
+    .methodology-section .section-container {
+      padding-top: 24px;
+      padding-bottom: 40px;
+    }
+    .methodology-card {
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .methodology-h2 {
+      font-size: 24px; font-weight: 600;
+      color: var(--text-heading); line-height: 28px;
+    }
+    .methodology-body {
+      font-size: 18px; font-weight: 500;
+      color: var(--text-body); line-height: 24px;
+    }
+
+    /* ── FAQ ─────────────────────────────────────────────────────── */
+    .faq-section {
+      background: white;
+    }
+    .faq-section .section-container { padding-bottom: 64px; }
+    .faq-h2 {
+      font-size: 28px; font-weight: 600;
+      color: var(--text-heading); line-height: 32px;
+      margin-bottom: 32px;
+    }
+    @media (max-width: 768px) { .faq-h2 { font-size: 22px; margin-bottom: 20px; } }
+
+    .accordion-list { display: flex; flex-direction: column; }
+    .accordion-item { border-bottom: 1px solid var(--border); }
+    .accordion-item.is-open {
+      background: var(--surface-subtle);
+      border-radius: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    .accordion-item.is-open + .accordion-item {
+      border-top: none;
+    }
+    .acc-trigger {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 24px;
+      background: transparent;
+      text-align: left;
+      cursor: pointer;
+      gap: 16px;
+    }
+    .acc-trigger:hover { background: rgba(0,0,0,0.02); }
+    .accordion-item.is-open .acc-trigger:hover { background: transparent; }
+    .acc-title {
+      font-size: 20px; font-weight: 600;
+      color: var(--text-headings-alt);
+      line-height: 28px;
+    }
+    @media (max-width: 640px) { .acc-title { font-size: 16px; line-height: 22px; } }
+    .acc-icon {
+      width: 32px; height: 32px;
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .icon-minus { display: none; }
+    .icon-plus  { display: flex; }
+    .accordion-item.is-open .icon-minus { display: flex; }
+    .accordion-item.is-open .icon-plus  { display: none; }
+    .acc-content {
+      display: none;
+      padding: 0 24px 24px;
+      font-size: 16px; font-weight: 400;
+      color: var(--text-body); line-height: 24px;
+    }
+    .accordion-item.is-open .acc-content { display: block; }
+
+    /* ── FOOTER ──────────────────────────────────────────────────── */
+    .site-footer { background: var(--footer-bg); }
+    .footer-content {
+      max-width: 1200px; margin: 0 auto;
+      padding: 48px 24px 40px;
+      display: flex; gap: 48px; align-items: flex-start;
+    }
+    .footer-brand {
+      display: flex; flex-direction: column; gap: 24px;
+      width: 280px; flex-shrink: 0; align-items: flex-start;
+    }
+    .footer-logo { height: 24px; width: auto; display: block; }
+    .footer-col-label {
+      font-size: 14px; font-weight: 600; color: white; line-height: 14px;
+    }
+    .social-row { display: flex; align-items: center; gap: 12px; }
+    .social-icon { display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; width: 24px; height: 24px;
+      opacity: 0.85; transition: opacity 0.15s; overflow: hidden; }
+    .social-icon:hover { opacity: 1; }
+    .social-icon img { width: 24px; height: 24px; object-fit: contain; display: block; max-width: none; }
+
+    .footer-ringier {
+      display: flex; flex-direction: column; gap: 12px;
+      width: 180px; flex-shrink: 0;
+    }
+    .footer-spacer { height: 4px; flex-shrink: 0; }
+    .ft-link {
+      font-size: 14px; font-weight: 400;
+      color: white; line-height: 20px;
+      transition: opacity 0.15s;
+    }
+    .ft-link:hover { opacity: 0.75; }
+
+    .footer-mobile-divider { display: none; }
+
+    .footer-app {
+      display: flex; flex-direction: column; gap: 12px;
+      width: 280px; flex-shrink: 0;
+    }
+    .app-badges { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+    .app-badges img { height: 30px; width: auto; }
+    .footer-copy {
+      font-size: 14px; font-weight: 400;
+      color: white; line-height: 20px;
+    }
+
+    .footer-divider { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+    .footer-divider hr {
+      border: none; border-top: 1px solid rgba(209,213,219,0.3); margin: 0;
+    }
+
+    .footer-sub {
+      max-width: 1200px; margin: 0 auto;
+      padding: 24px 24px;
+      display: flex; align-items: center;
+    }
+    .footer-legal { display: flex; gap: 16px; flex-wrap: nowrap; }
+    .legal-link {
+      font-size: 12px; font-weight: 400;
+      color: white; white-space: nowrap;
+      transition: opacity 0.15s;
+    }
+    .legal-link:hover { opacity: 0.7; }
+
+    /* Tablet */
+    @media (max-width: 1100px) {
+      .footer-content { gap: 40px; }
+      .footer-brand { width: 200px; gap: 16px; }
+      .footer-ringier { width: auto; flex: 1; }
+      .footer-app { width: auto; flex: 1; }
+      .footer-legal { gap: 12px; flex-wrap: wrap; }
+    }
+
+    /* Mobile */
+    @media (max-width: 767px) {
+      .footer-content {
+        padding: 40px 16px 32px;
+        flex-direction: column; gap: 0; align-items: center;
+      }
+      .footer-brand {
+        width: 100%; align-items: center; gap: 16px;
+        padding-bottom: 24px; /* override desktop align-items: flex-start */
+      }
+      .footer-logo { margin: 0 auto; }
+      .footer-mobile-divider {
+        width: 100%; height: 1px;
+        background: rgba(209,213,219,0.3);
+        margin-bottom: 24px; flex-shrink: 0;
+      }
+      .footer-ringier {
+        width: 100%; align-items: center; gap: 0;
+        padding-bottom: 24px;
+      }
+      .footer-ringier .footer-col-label { margin-bottom: 10px; }
+      .footer-ringier .footer-spacer { display: none; }
+      .ft-link {
+        display: flex; align-items: center; justify-content: center;
+        min-height: 44px; width: 100%; text-align: center;
+      }
+      .footer-app {
+        width: 100%; align-items: center; flex-shrink: 0;
+      }
+      .footer-copy { text-align: center; }
+      .footer-divider { padding: 0 16px; }
+      .footer-sub { padding: 20px 16px; justify-content: center; }
+      /* Mobile sub-footer: inline links with · separator */
+      .footer-legal {
+        justify-content: center; gap: 0;
+        font-size: 12px; line-height: 20px; text-align: center;
+      }
+      .legal-link { white-space: normal; }
+      .legal-link::after { content: ' · '; opacity: 0.5; }
+      .legal-link:last-child::after { content: ''; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════ NAVIGATION ═══════════════════ -->
+<nav class="site-nav" id="site-nav" aria-label="Main navigation">
+  <div class="nav-leading">
+    <button class="nav-hamburger" aria-label="Meniu" aria-expanded="false">
+      <img src="https://www.figma.com/api/mcp/asset/868b948e-ef25-46bf-ae96-21a233fc6f85" alt="" width="18" height="12">
+    </button>
+    <a href="#" class="nav-logo-wrap" aria-label="Imobiliare.ro – pagina principală">
+      <img class="nav-logo" src="https://www.figma.com/api/mcp/asset/56e172df-751f-4838-9f4f-653983b7ad62" alt="Imobiliare.ro">
+    </a>
+  </div>
+  <div class="nav-trailing">
+    <button class="nav-btn-add">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <circle cx="10" cy="10" r="7.5" stroke="#d62444" stroke-width="1.5"/>
+        <path d="M10 6.667v6.666M6.667 10h6.666" stroke="#d62444" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <span class="nav-btn-label-full">Adaugă anunț</span>
+      <span class="nav-btn-label-short">Anunț</span>
+    </button>
+    <div class="nav-links">
+      <a href="#" class="nav-link">Cont nou</a>
+      <a href="#" class="nav-link">Intră în cont</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════ INTRO ════════════════════════ -->
+<header class="intro-section" id="overview">
+
+  <!-- Breadcrumbs -->
+  <nav class="breadcrumbs" aria-label="Breadcrumb">
+    <!-- Home — Phosphor House (regular) -->
+    <svg class="bc-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" aria-label="Acasă">
+      <path d="M218.83,103.77l-80-75.48a1.14,1.14,0,0,1-.11-.11,16,16,0,0,0-21.53,0l-.11.11L37.17,103.77A16,16,0,0,0,32,115.55V208a16,16,0,0,0,16,16H96a16,16,0,0,0,16-16V160h32v48a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V115.55A16,16,0,0,0,218.83,103.77ZM208,208H160V160a16,16,0,0,0-16-16H112a16,16,0,0,0-16,16v48H48V115.55l.11-.1L128,40l79.9,75.43.11.1Z"/>
+    </svg>
+    <!-- Separator — Phosphor CaretRight (regular) -->
+    <svg class="bc-sep" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+      <path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"/>
+    </svg>
+    <!-- "Acasa" crumb — separator lives inside the group (4px gap) -->
+    <span class="bc-item">
+      <a href="#" class="bc-text">Acasa</a>
+      <svg class="bc-sep" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+        <path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"/>
+      </svg>
+    </span>
+    <!-- Current page -->
+    <span class="bc-item current">
+      <span class="bc-text">Indicele Imobiliare.ro</span>
+    </span>
+  </nav>
+
+  <!-- Title + last updated -->
+  <div class="page-title-area">
+    <h1 class="page-h1">Indicele Imobiliare.ro</h1>
+    <div class="page-meta">
+      <img src="https://www.figma.com/api/mcp/asset/925635ca-32a4-4067-b62c-f307c46d2ace" alt="" width="20" height="20">
+      <span class="meta-label">Last updated:</span>
+      <span class="meta-value">15.04.2026</span>
+    </div>
+  </div>
+
+</header>
+
+<!-- ═══════════════════════════════ QUICKLINKS (sticky bar) ══════ -->
+<div class="quicklinks-bar" id="quicklinks-bar">
+  <div class="quicklinks" role="tablist" aria-label="Navigare rapidă">
+    <button class="ql-chip active" data-target="overview"    role="tab" aria-selected="true">Overview</button>
+    <button class="ql-chip" data-target="apartamente"        role="tab" aria-selected="false">Apartment Prices</button>
+    <button class="ql-chip" data-target="case"               role="tab" aria-selected="false">House Prices</button>
+    <button class="ql-chip" data-target="harta"              role="tab" aria-selected="false">Index by Regions</button>
+    <button class="ql-chip" data-target="metodologie"        role="tab" aria-selected="false">Methodology</button>
+    <button class="ql-chip" data-target="faq"                role="tab" aria-selected="false">FAQ</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ EDITORIAL TEXT ═══════════════ -->
+<section class="editorial-section">
+  <p class="editorial-lead">
+    The Romanian real estate market opened 2026 on steadier footing. The Imobiliare.ro Index shows national apartment asking prices up 2.8% quarter-on-quarter, with București-Ilfov and Cluj setting the pace while Iași and Timișoara post modest but consistent gains. New-build supply has loosened, and mortgage demand is recovering as rates stabilise.
+  </p>
+  <div class="editorial-body">
+    <p>Search intent tells a sharper story. Queries are clustering around <strong>two-bedroom apartments under 120,000 €,</strong> with spikes for "energy-efficient" and "parking included" — affordability and running costs are beating raw square-metre maths. Investor searches for <strong>garsoniere in university cities</strong> are up 18% year-on-year, led by Cluj-Napoca, Brașov, and Oradea.</p>
+    <p>Listings move faster in Transylvania and the West; Sud-Muntenia and Sud-Est remain slower. Outside the capital, "<strong>case cu grădină</strong>" and "<strong>apartamente cu terasă</strong>" still dominate intent, a post-pandemic preference that hasn't faded. The Index below breaks these shifts down by region and property type — click any area to see where prices are heading.</p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ SECTION: APARTMENT PRICES ════ -->
+<section class="data-section chart-section" id="apartamente">
+  <div class="section-container" style="padding-bottom: 20px;">
+    <div class="section-header">
+      <div class="section-eyebrow">
+        <div class="eyebrow-dot"></div>
+        <span class="eyebrow-text">Market Report · 2022–2024</span>
+      </div>
+      <h2 class="section-h2">The evolution of apartment prices in Romania</h2>
+    </div>
+  </div>
+  <!-- Graph embed: KPI grid + interactive chart from romania-apartments.html -->
+  <div class="chart-strip apartments-strip" id="embed-apartments">
+    <iframe
+      id="iframe-apt"
+      src="../Graphs/romania-apartments-chart.html"
+      scrolling="no"
+      title="Evoluția prețurilor apartamentelor din România"
+      loading="lazy"
+    ></iframe>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ SECTION: HOUSE PRICES ════════ -->
+<section class="data-section chart-section" id="case">
+  <div class="section-container" style="padding-bottom: 20px;">
+    <div class="section-header">
+      <div class="section-eyebrow">
+        <div class="eyebrow-dot"></div>
+        <span class="eyebrow-text">Market Report · 2022–2024</span>
+      </div>
+      <h2 class="section-h2">The evolution of house prices in Romania</h2>
+    </div>
+  </div>
+  <div class="chart-strip houses-strip" id="embed-houses">
+    <iframe
+      id="iframe-houses"
+      src="../Graphs/romania-apartments-chart.html"
+      scrolling="no"
+      title="Evoluția prețurilor caselor din România"
+      loading="lazy"
+    ></iframe>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ SECTION: REGIONAL MAP ════════ -->
+<section class="data-section chart-section" id="harta">
+  <div class="section-container" style="padding-top: 20px; padding-bottom: 20px;">
+    <div class="section-header">
+      <div class="section-eyebrow">
+        <div class="eyebrow-dot"></div>
+        <span class="eyebrow-text">Market Report · 2022–2024</span>
+      </div>
+      <h2 class="section-h2">Real estate price index by region</h2>
+    </div>
+  </div>
+  <div class="chart-strip map-strip" id="embed-map">
+    <iframe
+      id="iframe-map"
+      src="../Graphs/romania-price-map.html"
+      scrolling="no"
+      title="Indicele prețurilor imobiliare pe regiuni"
+      loading="lazy"
+    ></iframe>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ METHODOLOGY ══════════════════ -->
+<section class="data-section methodology-section" id="metodologie">
+  <div class="section-container">
+    <div class="methodology-card">
+      <h2 class="methodology-h2">Methodology</h2>
+      <p class="methodology-body">
+        The Imobiliare.ro Index is built from active listings on imobiliare.ro combined with notarised transaction data from ANCPI and partner banks' mortgage valuations. Prices are normalised to RON per square metre, aggregated at regional and city level using a rolling three-month median, with statistical outliers (top and bottom 2.5%) trimmed to reduce noise from mispriced or luxury listings. The Index is refreshed monthly and covers apartments, houses, land, and commercial spaces with a minimum sample of 50 listings per area — regions below that threshold are flagged as indicative only.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ FAQ ══════════════════════════ -->
+<section class="data-section faq-section" id="faq">
+  <div class="section-container">
+    <h2 class="faq-h2">Frequently Asked Questions</h2>
+    <div class="accordion-list" role="list">
+
+      <!-- Item 1 — open by default -->
+      <div class="accordion-item is-open" role="listitem">
+        <button class="acc-trigger" aria-expanded="true">
+          <span class="acc-title">De ce să alegi Imobiliare.ro?</span>
+          <span class="acc-icon" aria-hidden="true">
+            <svg class="icon-minus" width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M5 12h14" stroke="#048ba8" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <svg class="icon-plus" width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M12 5v14M5 12h14" stroke="#048ba8" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </span>
+        </button>
+        <div class="acc-content">
+          Cumperi, închiriezi sau vinzi o locuință? Nu este suficient să ai doar multe anunțuri la dispoziție, ai nevoie și de încredere, informații clare și instrumente care să te ajute să iei decizia potrivită. Pe Imobiliare.ro, platforma imobiliară cu cea mai mare încredere în rândul utilizatorilor, le găsești pe toate, într-un singur loc.
+        </div>
+      </div>
+
+      <!-- Item 2 -->
+      <div class="accordion-item" role="listitem">
+        <button class="acc-trigger" aria-expanded="false">
+          <span class="acc-title">Cele mai relevante anunțuri, într-un singur loc</span>
+          <span class="acc-icon" aria-hidden="true">
+            <svg class="icon-minus" width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M5 12h14" stroke="#048ba8" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <svg class="icon-plus" width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M12 5v14M5 12h14" stroke="#048ba8" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </span>
+        </button>
+        <div class="acc-content">
+          Găsești mii de anunțuri imobiliare verificate pe Imobiliare.ro, cu filtre avansate care te ajută să identifici rapid proprietatea potrivită. Toate anunțurile sunt centralizate și actualizate în timp real, fără duplicate.
+        </div>
+      </div>
+
+      <!-- Item 3 -->
+      <div class="accordion-item" role="listitem">
+        <button class="acc-trigger" aria-expanded="false">
+          <span class="acc-title">Căutare simplă, rapidă și eficientă</span>
+          <span class="acc-icon" aria-hidden="true">
+            <svg class="icon-minus" width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M5 12h14" stroke="#048ba8" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <svg class="icon-plus" width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M12 5v14M5 12h14" stroke="#048ba8" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </span>
+        </button>
+        <div class="acc-content">
+          Interfața intuitivă și filtrele inteligente îți permit să găsești proprietatea potrivită în câteva secunde. Poți filtra după zonă, tip de proprietate, suprafață, preț și multe altele — de pe orice dispozitiv.
+        </div>
+      </div>
+
+      <!-- Item 4 -->
+      <div class="accordion-item" role="listitem">
+        <button class="acc-trigger" aria-expanded="false">
+          <span class="acc-title">Creează-ți cont și ai control total asupra căutării</span>
+          <span class="acc-icon" aria-hidden="true">
+            <svg class="icon-minus" width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M5 12h14" stroke="#048ba8" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <svg class="icon-plus" width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M12 5v14M5 12h14" stroke="#048ba8" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </span>
+        </button>
+        <div class="acc-content">
+          Cu un cont Imobiliare.ro poți salva căutări, adăuga proprietăți la favorite, activa alerte de preț și urmări evoluția pieței în zonele care te interesează.
+        </div>
+      </div>
+
+      <!-- Item 5 -->
+      <div class="accordion-item" role="listitem">
+        <button class="acc-trigger" aria-expanded="false">
+          <span class="acc-title">Instrumente care te ajută să iei decizii mai bune</span>
+          <span class="acc-icon" aria-hidden="true">
+            <svg class="icon-minus" width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M5 12h14" stroke="#048ba8" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <svg class="icon-plus" width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M12 5v14M5 12h14" stroke="#048ba8" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </span>
+        </button>
+        <div class="acc-content">
+          De la calculatorul de rate și comparatorul de prețuri, până la rapoarte de piață și Indicele Imobiliare.ro pe regiuni — toate instrumentele necesare pentru o decizie informată sunt disponibile gratuit pe platformă.
+        </div>
+      </div>
+
+    </div><!-- /accordion-list -->
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ FOOTER ═══════════════════════ -->
+<footer class="site-footer" aria-label="Footer">
+  <div class="footer-content">
+
+    <!-- Brand column -->
+    <div class="footer-brand">
+      <img class="footer-logo" src="https://www.figma.com/api/mcp/asset/35ee52bb-0803-4f78-9c24-584f3014c26d" alt="imobiliare.ro">
+      <span class="footer-col-label">URMĂREȘTE-NE:</span>
+      <div class="social-row">
+        <a href="#" class="social-icon" aria-label="Facebook">
+          <img src="https://www.figma.com/api/mcp/asset/d8ac23d4-1f8d-4f93-96ba-ae06c893988b" alt="Facebook">
+        </a>
+        <a href="#" class="social-icon" aria-label="YouTube">
+          <img src="https://www.figma.com/api/mcp/asset/f5669c38-2e95-412f-9ac1-6e59c8db4e9f" alt="YouTube">
+        </a>
+        <a href="#" class="social-icon" aria-label="Instagram">
+          <img src="https://www.figma.com/api/mcp/asset/df478f49-81c2-4517-9e5c-704279fbc76a" alt="Instagram">
+        </a>
+        <a href="#" class="social-icon" aria-label="LinkedIn">
+          <img src="https://www.figma.com/api/mcp/asset/d573759e-c061-496f-8f21-be4b01aa4c5e" alt="LinkedIn">
+        </a>
+        <a href="#" class="social-icon" aria-label="TikTok">
+          <img src="https://www.figma.com/api/mcp/asset/633f0a89-ce4a-4ed7-90a0-1d16aaf5eadb" alt="TikTok">
+        </a>
+      </div>
+    </div>
+
+    <!-- Mobile divider between brand and links -->
+    <div class="footer-mobile-divider" aria-hidden="true"></div>
+
+    <!-- Ringier links -->
+    <div class="footer-ringier">
+      <span class="footer-col-label">RINGIER ROMÂNIA</span>
+      <div class="footer-spacer"></div>
+      <a href="#" class="ft-link">Libertatea</a>
+      <a href="#" class="ft-link">eJobs</a>
+      <a href="#" class="ft-link">Gazeta Sporturilor</a>
+      <a href="#" class="ft-link">Imoradar24.ro</a>
+    </div>
+
+    <!-- Mobile divider between links and app -->
+    <div class="footer-mobile-divider" aria-hidden="true"></div>
+
+    <!-- App + copyright -->
+    <div class="footer-app">
+      <span class="footer-col-label">INSTALEAZĂ APLICAŢIA</span>
+      <div class="footer-spacer"></div>
+      <div class="app-badges">
+        <a href="#">
+          <img src="https://www.figma.com/api/mcp/asset/e42e6db7-295b-4cd1-89a0-9bc9dc3e663b" alt="Disponibil pe Google Play" height="30">
+        </a>
+        <a href="#">
+          <img src="https://www.figma.com/api/mcp/asset/7d98f0f0-7e67-4516-92ea-336632e9b04c" alt="Descarcă din App Store" height="30">
+        </a>
+      </div>
+      <p class="footer-copy">
+        © Realmedia Network 1999-2025. Toate drepturile rezervate.<br>
+        www.imobiliare.ro şi sigla www.imobiliare.ro sunt mărci înregistrate.
+      </p>
+    </div>
+
+  </div>
+
+  <div class="footer-divider"><hr></div>
+
+  <div class="footer-sub">
+    <nav class="footer-legal" aria-label="Legal">
+      <a href="#" class="legal-link">Politica de confidențialitate</a>
+      <a href="#" class="legal-link">Termeni și condiții</a>
+      <a href="#" class="legal-link">Setez preferințe cookies manual</a>
+      <a href="#" class="legal-link">Raportează conținut ilegal</a>
+      <a href="#" class="legal-link">Contact DSA</a>
+      <a href="#" class="legal-link">Gestionați recomandările personalizate</a>
+      <a href="#" class="legal-link">Statistici vizitatori</a>
+      <a href="#" class="legal-link">ANPC</a>
+    </nav>
+  </div>
+</footer>
+
+<!-- ═══════════════════════════════ SCRIPTS ══════════════════════ -->
+<script>
+/* ──────────────────────────────────────────────────────────────
+   QUICK LINKS — scroll-to + active chip
+────────────────────────────────────────────────────────────── */
+const chips   = Array.from(document.querySelectorAll('.ql-chip'));
+const navEl   = document.getElementById('site-nav');
+const qlBarEl = document.getElementById('quicklinks-bar');
+
+function stickyHeight() {
+  return navEl.offsetHeight + 24 + (qlBarEl ? qlBarEl.offsetHeight : 0);
+}
+
+chips.forEach(chip => {
+  chip.addEventListener('click', () => {
+    const target = document.getElementById(chip.dataset.target);
+    if (!target) return;
+    const top = target.getBoundingClientRect().top + window.scrollY - stickyHeight() - 8;
+    window.scrollTo({ top, behavior: 'smooth' });
+    setActiveChip(chip);
+  });
+});
+
+function setActiveChip(active) {
+  chips.forEach(c => {
+    c.classList.toggle('active', c === active);
+    c.setAttribute('aria-selected', c === active ? 'true' : 'false');
+  });
+}
+
+/* Scroll-spy: update chip as sections enter view */
+const sectionIds = ['overview','apartamente','case','harta','metodologie','faq'];
+const sections   = sectionIds.map(id => document.getElementById(id)).filter(Boolean);
+
+function scrollSpy() {
+  const navH = stickyHeight() + 8;
+  let current = sections[0];
+  sections.forEach(sec => {
+    if (sec.getBoundingClientRect().top <= navH) current = sec;
+  });
+  const matchChip = chips.find(c => c.dataset.target === current.id);
+  if (matchChip) setActiveChip(matchChip);
+}
+window.addEventListener('scroll', scrollSpy, { passive: true });
+
+/* ──────────────────────────────────────────────────────────────
+   ACCORDION — FAQ toggle
+────────────────────────────────────────────────────────────── */
+document.querySelectorAll('.acc-trigger').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const item   = btn.closest('.accordion-item');
+    const isOpen = item.classList.contains('is-open');
+    item.classList.toggle('is-open', !isOpen);
+    btn.setAttribute('aria-expanded', String(!isOpen));
+    const content = item.querySelector('.acc-content');
+    content.style.display = isOpen ? 'none' : 'block';
+  });
+});
+
+/* ──────────────────────────────────────────────────────────────
+   IFRAME AUTO-RESIZE — sets iframe to full content height.
+   CSS handles the top/bottom clipping via negative margin-bottom,
+   so the strip auto-sizes without an explicit height.
+────────────────────────────────────────────────────────────── */
+function resizeChartIframe(iframe) {
+  try {
+    const doc  = iframe.contentDocument || iframe.contentWindow.document;
+    // Measure the content wrapper directly — avoids body { min-height: 100vh } inflating scrollHeight
+    // Handles .page (apartments/houses files) and .map-section (map file)
+    const page = doc.querySelector('.page, .map-section');
+    const h    = page
+      ? page.offsetTop + page.offsetHeight
+      : Math.max(doc.documentElement.scrollHeight, doc.body.scrollHeight);
+    if (h < 100) return; // not ready yet
+    iframe.style.height = h + 'px';
+  } catch (e) {
+    // Same-origin access blocked; CSS height fallback applies
+  }
+}
+
+document.querySelectorAll('.chart-strip iframe').forEach(iframe => {
+  iframe.addEventListener('load', () => {
+    resizeChartIframe(iframe);
+    // Re-measure after internal JS finishes rendering (charts, SVG maps)
+    setTimeout(() => resizeChartIframe(iframe), 300);
+    setTimeout(() => resizeChartIframe(iframe), 800);
+    // ResizeObserver: fires the moment the content wrapper settles to its real height
+    // (catches SVG maps and chart.js canvases that paint after load)
+    try {
+      const doc  = iframe.contentDocument || iframe.contentWindow.document;
+      const page = doc.querySelector('.page, .map-section');
+      if (page && 'ResizeObserver' in iframe.contentWindow) {
+        const ro = new iframe.contentWindow.ResizeObserver(() => resizeChartIframe(iframe));
+        ro.observe(page);
+      }
+    } catch(e) {}
+  });
+});
+
+/* Re-run on resize (debounced) */
+let resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    document.querySelectorAll('.chart-strip iframe').forEach(resizeChartIframe);
+  }, 150);
+}, { passive: true });
+
+/* postMessage height from embedded chart files.
+   Bypasses file:// cross-frame contentDocument restriction. */
+window.addEventListener('message', (e) => {
+  if (!e.data || e.data.type !== 'imo-chart-height') return;
+  document.querySelectorAll('.chart-strip iframe').forEach(iframe => {
+    try {
+      if (iframe.contentWindow === e.source) {
+        iframe.style.height = e.data.h + 'px';
+      }
+    } catch (_) {}
+  });
+}, false);
+</script>
+</body>
+</html>
