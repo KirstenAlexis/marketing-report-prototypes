@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Evoluție prețuri pe zone — București</title>
+  <title>Evoluție prețuri pe zone — Timișoara</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -113,6 +113,8 @@
 
     /* ── FILTER BAR ─────────────────────────────────────────────── */
     .filter-bar {
+      position: relative;
+      z-index: 10;
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
@@ -139,9 +141,9 @@
 
     button.pill {
       font-family: var(--im-font-family-base);
-      font-size: 13px;
+      font-size: 16px;
       font-weight: 400;
-      padding: 12px 16px;
+      padding: 10px 16px;
       border-radius: 8px;
       border: 1px solid #6b7280;
       background: var(--im-color-surface);
@@ -149,7 +151,8 @@
       cursor: pointer;
       transition: background 0.14s ease, color 0.14s ease, border-color 0.14s ease;
       white-space: nowrap;
-      line-height: 1;
+      line-height: 24px;
+      height: 44px;
       outline: none;
     }
     button.pill:hover:not(.active):not(:disabled) {
@@ -172,6 +175,392 @@
       color: #9ca3af;
       cursor: not-allowed;
       pointer-events: none;
+    }
+
+    /* ── SEGMENTED CONTROL — matches Figma SegmentedControl ────────── */
+    .seg-control {
+      display: flex;
+      align-items: center;
+      border-radius: 8px;
+    }
+    .seg-item {
+      font-family: var(--im-font-family-base);
+      font-size: 16px;
+      font-weight: 400;
+      padding: 10px 16px;
+      background: #ffffff;
+      color: #374151;
+      border: 1px solid #6b7280;
+      border-left-width: 0;
+      cursor: pointer;
+      min-width: 44px;
+      height: 44px;
+      line-height: 24px;
+      text-align: center;
+      white-space: nowrap;
+      outline: none;
+      transition: background 0.14s, color 0.14s;
+    }
+    .seg-item:first-child {
+      border-left-width: 1px;
+      border-radius: 8px 0 0 8px;
+      flex: 1;
+    }
+    .seg-item:last-child {
+      border-radius: 0 8px 8px 0;
+    }
+    .seg-item:hover:not(.seg-active) {
+      color: #0b778e;
+    }
+    .seg-item:focus-visible {
+      outline: 2px solid #048ba8;
+      outline-offset: -2px;
+      z-index: 1;
+      position: relative;
+    }
+    .seg-item.seg-active {
+      background: #e6f3f6;
+      color: #0b778e;
+    }
+
+    /* ── NEIGHBORHOOD DROPDOWN — matches Figma SelectInput + Dropdown ── */
+    .neighborhood-selector {
+      position: relative;
+      z-index: 10;
+      margin-bottom: 20px;
+    }
+    .neighborhood-selector .filter-label {
+      display: block;
+      margin-bottom: 6px;
+    }
+    .dropdown-wrap {
+      position: relative;
+      display: inline-block;
+      min-width: 280px;
+    }
+
+    /* Toggle — closed */
+    .dropdown-toggle {
+      font-family: var(--im-font-family-base);
+      font-size: 16px;
+      font-weight: 400;
+      padding: 10px 16px;
+      border-radius: 8px;
+      border: 1px solid #6b7280;
+      background: #ffffff;
+      color: #374151;
+      cursor: pointer;
+      outline: none;
+      width: 100%;
+      text-align: left;
+      line-height: 24px;
+      height: 44px;
+      transition: border-color 0.14s, border-radius 0.14s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .dropdown-toggle:focus-visible {
+      border: 2px solid #048ba8;
+    }
+    /* Toggle — open: radius only top, no bottom border */
+    .dropdown-wrap.open .dropdown-toggle {
+      border-radius: 8px 8px 0 0;
+      border-bottom-color: transparent;
+    }
+    .dropdown-toggle-text {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .dropdown-chevron {
+      flex-shrink: 0;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.18s ease;
+    }
+    .dropdown-chevron svg {
+      width: 14px;
+      height: 14px;
+    }
+    .dropdown-wrap.open .dropdown-chevron {
+      transform: rotate(180deg);
+    }
+
+    /* Menu — connects seamlessly below toggle */
+    .dropdown-menu {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: #ffffff;
+      border: 1px solid #6b7280;
+      border-top: none;
+      border-radius: 0 0 8px 8px;
+      z-index: 100;
+      max-height: 320px;
+      overflow-y: auto;
+    }
+    .dropdown-wrap.open .dropdown-menu { display: block; }
+
+    /* Items */
+    .dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      font-family: var(--im-font-family-base);
+      font-size: 16px;
+      font-weight: 400;
+      color: #374151;
+      cursor: pointer;
+      transition: background 0.1s;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+      line-height: 24px;
+    }
+    .dropdown-item:hover { background: #f3f4f6; }
+    .dropdown-item.disabled-item {
+      opacity: 0.45;
+      pointer-events: none;
+    }
+
+    /* Custom checkbox — matches Figma Checkboxes component */
+    .dropdown-item input[type="checkbox"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 24px;
+      height: 24px;
+      min-width: 24px;
+      border: 1px solid #6b7280;
+      border-radius: 4px;
+      background: #ffffff;
+      cursor: pointer;
+      flex-shrink: 0;
+      position: relative;
+      transition: background 0.12s, border-color 0.12s;
+    }
+    .dropdown-item input[type="checkbox"]:hover {
+      border-color: #048ba8;
+    }
+    .dropdown-item input[type="checkbox"]:checked {
+      background: #048ba8;
+      border-color: #048ba8;
+    }
+    .dropdown-item input[type="checkbox"]:checked::after {
+      content: '';
+      position: absolute;
+      left: 7px;
+      top: 3px;
+      width: 6px;
+      height: 11px;
+      border: solid #ffffff;
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+    }
+    .dropdown-item input[type="checkbox"]:focus-visible {
+      outline: 2px solid #048ba8;
+      outline-offset: 2px;
+    }
+
+    /* Quick actions row — sticky to bottom */
+    .dropdown-actions {
+      display: flex;
+      gap: 8px;
+      padding: 10px 16px;
+      border-top: 1px solid #d1d5db;
+      position: sticky;
+      bottom: 0;
+      background: #ffffff;
+      z-index: 1;
+      box-shadow: 0 -4px 8px rgba(0,0,0,0.04);
+    }
+    .dropdown-actions button {
+      font-family: var(--im-font-family-base);
+      font-size: 14px;
+      font-weight: 600;
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid #6b7280;
+      background: #ffffff;
+      color: #374151;
+      cursor: pointer;
+      transition: background 0.12s, color 0.12s, border-color 0.12s;
+    }
+    .dropdown-actions button:hover:not(.dd-reset) {
+      background: #e6f3f6;
+      border-color: #048ba8;
+      color: #0b778e;
+    }
+    .dropdown-actions button.active {
+      background: #e6f3f6;
+      border-color: #6b7280;
+      color: #0b778e;
+    }
+    /* Resetează — destructive text button matching Figma TextButton */
+    .dropdown-actions .dd-reset {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--im-font-family-base);
+      font-size: 14px;
+      font-weight: 600;
+      color: #dc2626;
+      background: none;
+      border: none;
+      padding: 4px 2px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: opacity 0.12s;
+    }
+    .dropdown-actions .dd-reset:hover:not(:disabled) {
+      opacity: 0.75;
+      background: none;
+      color: #dc2626;
+      border-color: transparent;
+    }
+    .dropdown-actions .dd-reset:disabled {
+      color: #9ca3af;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+    .dropdown-actions .dd-reset:disabled svg path {
+      stroke: #9ca3af;
+    }
+    .dropdown-actions .dd-reset:focus-visible {
+      outline: 2px solid #dc2626;
+      outline-offset: 2px;
+    }
+    .dropdown-actions .dd-reset svg {
+      flex-shrink: 0;
+    }
+
+    /* ── SUMMARY CARDS — matches KPI card pattern from bucharest-apartments-chart ── */
+    .summary-section {
+      margin-bottom: 24px;
+      animation: fadeUp 0.44s ease 0.07s both;
+    }
+    .summary-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+    .summary-header .summary-group-label { margin-bottom: 0; }
+
+    .summary-group-label {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      color: #4b5563;
+      margin-bottom: 10px;
+      line-height: 1;
+    }
+    .summary-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    .summary-row + .summary-group-label { margin-top: 20px; }
+    @media (max-width: 900px) {
+      .summary-row { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 480px) {
+      .summary-row { grid-template-columns: 1fr; gap: 10px; }
+    }
+
+    /* Outer wrapper — sunken gray tray */
+    .summary-card {
+      background: #f3f4f6;
+      border-radius: 18px;
+      padding: 8px;
+      animation: fadeUp 0.45s ease both;
+    }
+    .summary-card:nth-child(1) { animation-delay: 0.04s; }
+    .summary-card:nth-child(2) { animation-delay: 0.10s; }
+    .summary-card:nth-child(3) { animation-delay: 0.16s; }
+
+    /* Inner white card */
+    .summary-card-inner {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0px 2px 6px rgba(0,0,0,0.06), 0px 1px 2px rgba(0,0,0,0.04);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      height: 100%;
+    }
+    @media (max-width: 400px) { .summary-card-inner { padding: 12px; } }
+
+    .summary-card-label {
+      font-size: 12px;
+      font-weight: 400;
+      color: #4b5563;
+      line-height: 1;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .summary-card-value {
+      font-weight: 800;
+      font-size: 24px;
+      line-height: 1;
+      color: #111827;
+      letter-spacing: 0;
+    }
+    @media (max-width: 900px) { .summary-card-value { font-size: 20px; } }
+    @media (max-width: 400px) { .summary-card-value { font-size: 18px; } }
+
+    .summary-card-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      letter-spacing: 0.01em;
+      white-space: nowrap;
+      line-height: 1.7;
+    }
+    .badge-pos { background: var(--im-color-success-bg); color: var(--im-color-success); }
+    .badge-neg { background: var(--im-color-danger-bg);  color: var(--im-color-danger); }
+
+    /* Sparkline — sits between value and badges */
+    .summary-card-sparkline {
+      display: block;
+      width: 100%;
+      height: 28px;
+    }
+    .summary-card-sparkline line {
+      stroke: var(--im-color-border);
+      stroke-width: 0.5;
+    }
+    .summary-card-sparkline polyline {
+      fill: none;
+      stroke-width: 1.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-dasharray: var(--spark-len);
+      stroke-dashoffset: var(--spark-len);
+      animation: sparkDraw 1s ease forwards;
+    }
+    @keyframes sparkDraw {
+      to { stroke-dashoffset: 0; }
     }
 
     /* ── CHART CARD ─────────────────────────────────────────────── */
@@ -269,7 +658,7 @@
     /* ── CANVAS WRAPS ───────────────────────────────────────────── */
     .chart-wrap { position: relative; height: 300px; }
     @media (max-width: 768px) { .chart-wrap { height: 250px; } }
-    #chartBWrap { height: 272px; } /* overridden by JS */
+    #chartBWrap { height: 272px; }
 
     /* ── MOBILE FILTER LAYOUT (≤ 640px) ─────────────────── */
     @media (max-width: 640px) {
@@ -307,46 +696,43 @@
       .mobile-filter-btn {
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 8px;
         font-family: var(--im-font-family-base);
-        font-size: 13px;
+        font-size: 16px;
         font-weight: 600;
-        background: var(--im-color-surface);
-        border: 1px solid var(--im-color-border-subtle);
+        background: #ffffff;
+        border: 1px solid #949494;
         border-radius: 8px;
-        padding: 9px 13px;
+        padding: 10px 16px;
+        height: 44px;
         cursor: pointer;
-        color: var(--im-color-text-secondary);
+        color: #0b778e;
         transition: border-color 0.14s, color 0.14s;
         outline: none;
         flex-shrink: 0;
-        line-height: 1;
+        line-height: 24px;
       }
-      .mobile-filter-btn:focus-visible { border: 2px solid var(--im-color-secondary); }
-      .mobile-filter-btn.has-active {
-        border-color: var(--im-color-secondary);
-        color: var(--im-color-secondary);
+      .mobile-filter-btn:focus-visible {
+        outline: 2px solid #048ba8;
+        outline-offset: -2px;
+      }
+      .mobile-filter-btn[aria-expanded="true"] {
+        background: #e6f3f6;
       }
       .mobile-filter-count {
         display: none;
         align-items: center;
         justify-content: center;
-        min-width: 17px;
-        height: 17px;
-        padding: 0 4px;
-        border-radius: 9px;
-        background: var(--im-color-secondary);
+        min-width: 20px;
+        height: 20px;
+        padding: 0 5px;
+        border-radius: 10px;
+        background: #048ba8;
         color: #fff;
-        font-size: 10px;
+        font-size: 11px;
         font-weight: 700;
       }
       .mobile-filter-btn.has-active .mobile-filter-count { display: inline-flex; }
-      .filter-chevron {
-        font-size: 11px;
-        display: inline-block;
-        transition: transform 0.18s ease;
-      }
-      .mobile-filter-btn[aria-expanded="true"] .filter-chevron { transform: rotate(180deg); }
       .mobile-active-chips {
         display: flex;
         gap: 5px;
@@ -388,13 +774,32 @@
         scrollbar-width: none;
         gap: 6px;
         width: 100%;
+        -webkit-mask-image: linear-gradient(to right, black 88%, transparent 100%);
+        mask-image: linear-gradient(to right, black 88%, transparent 100%);
       }
       .secondary-filters .pills-row::-webkit-scrollbar { display: none; }
       .secondary-filters button.pill {
-        font-size: 13px;
-        padding: 12px 16px;
+        font-size: 16px;
+        padding: 10px 16px;
+        line-height: 24px;
+        height: 44px;
         flex-shrink: 0;
       }
+      .secondary-filters .seg-control {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -webkit-mask-image: linear-gradient(to right, black 88%, transparent 100%);
+        mask-image: linear-gradient(to right, black 88%, transparent 100%);
+      }
+      .secondary-filters .seg-control::-webkit-scrollbar { display: none; }
+      .secondary-filters .seg-item { flex-shrink: 0; }
+
+      .dropdown-wrap { min-width: 100%; }
+
+      .card-header { flex-direction: column; gap: 8px; }
+      .card-header .seg-control { width: 100%; }
     }
 
     /* ── PERIOD TOGGLE — same pill style as filter bar ─────────── */
@@ -408,9 +813,9 @@
 
     button.period-btn {
       font-family: var(--im-font-family-base);
-      font-size: 13px;
+      font-size: 16px;
       font-weight: 400;
-      padding: 12px 16px;
+      padding: 10px 16px;
       border-radius: 8px;
       border: 1px solid #6b7280;
       background: var(--im-color-surface);
@@ -418,7 +823,8 @@
       cursor: pointer;
       transition: background 0.14s ease, color 0.14s ease, border-color 0.14s ease;
       white-space: nowrap;
-      line-height: 1;
+      line-height: 24px;
+      height: 44px;
       outline: none;
     }
     button.period-btn:hover:not(.active) { color: #0b778e; }
@@ -458,12 +864,16 @@
     <div class="mobile-filter-bar">
       <button class="mobile-filter-btn" id="mobileFilterBtn"
               aria-expanded="false" aria-controls="secondaryFilters">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-          <path d="M1 3h12M3 7h8M5 11h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        <svg width="20" height="18" viewBox="0 0 20 18" fill="none" aria-hidden="true">
+          <line x1="1" y1="3" x2="19" y2="3" stroke="#048ba8" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="1" y1="9" x2="19" y2="9" stroke="#048ba8" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="1" y1="15" x2="19" y2="15" stroke="#048ba8" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="4" cy="3" r="2" stroke="#048ba8" stroke-width="1.5" fill="white"/>
+          <circle cx="16" cy="9" r="2" stroke="#048ba8" stroke-width="1.5" fill="white"/>
+          <circle cx="10" cy="15" r="2" stroke="#048ba8" stroke-width="1.5" fill="white"/>
         </svg>
         Filtre
         <span class="mobile-filter-count" id="mobileFilterCount"></span>
-        <span class="filter-chevron" aria-hidden="true">▾</span>
       </button>
       <div class="mobile-active-chips" id="mobileActiveChips"></div>
     </div>
@@ -474,7 +884,7 @@
         <span class="filter-label">Tip proprietate</span>
         <div class="pills-row">
           <button class="pill active" data-filter="propertyType" data-val="apartament">Apartament</button>
-          <button class="pill"        data-filter="propertyType" data-val="casa"       >Casă</button>
+          <button class="pill"        data-filter="propertyType" data-val="casa"       >Casa</button>
           <button class="pill"        data-filter="propertyType" data-val="teren"      >Teren</button>
         </div>
       </div>
@@ -482,10 +892,10 @@
       <div class="filter-sep" aria-hidden="true"></div>
 
       <div class="filter-group">
-        <span class="filter-label">Piață</span>
+        <span class="filter-label">Piata</span>
         <div class="pills-row">
-          <button class="pill active" data-filter="market" data-val="vanzare"    >Vânzare</button>
-          <button class="pill"        data-filter="market" data-val="inchiriere" >Închiriere</button>
+          <button class="pill active" data-filter="market" data-val="vanzare"    >Vanzare</button>
+          <button class="pill"        data-filter="market" data-val="inchiriere" >Inchiriere</button>
           <button class="pill"        data-filter="market" data-val="primar"     >Primar</button>
           <button class="pill"        data-filter="market" data-val="secundar"   >Secundar</button>
         </div>
@@ -495,12 +905,12 @@
 
       <div class="filter-group">
         <span class="filter-label">Nr. camere</span>
-        <div class="pills-row">
-          <button class="pill active" data-filter="rooms" data-val="toate">Toate</button>
-          <button class="pill"        data-filter="rooms" data-val="1"    >1</button>
-          <button class="pill"        data-filter="rooms" data-val="2"    >2</button>
-          <button class="pill"        data-filter="rooms" data-val="3"    >3</button>
-          <button class="pill"        data-filter="rooms" data-val="4plus">4+</button>
+        <div class="seg-control" id="roomsControl">
+          <button class="seg-item seg-active" data-filter="rooms" data-val="toate">Toate</button>
+          <button class="seg-item"            data-filter="rooms" data-val="1"    >1</button>
+          <button class="seg-item"            data-filter="rooms" data-val="2"    >2</button>
+          <button class="seg-item"            data-filter="rooms" data-val="3"    >3</button>
+          <button class="seg-item"            data-filter="rooms" data-val="4plus">4+</button>
         </div>
       </div>
 
@@ -508,19 +918,61 @@
 
   </div>
 
+  <!-- SUMMARY CARDS — top 3 most expensive + top 3 cheapest -->
+  <div class="summary-section" id="summarySection">
+    <div class="summary-header">
+      <div class="summary-group-label">Cele Mai Scumpe Cartiere</div>
+      <div class="seg-control" id="summaryPeriodToggle" role="group" aria-label="Perioadă comparație carduri">
+        <button class="seg-item seg-active" data-period="yoy">% YoY</button>
+        <button class="seg-item"            data-period="mom">% MoM</button>
+        <button class="seg-item"            data-period="ytd">% de la 01/01/2025</button>
+      </div>
+    </div>
+    <div class="summary-row" id="summaryExpensive"></div>
+    <div class="summary-group-label">Cele Mai Ieftine Cartiere</div>
+    <div class="summary-row" id="summaryCheap"></div>
+  </div>
+
+  <!-- Neighborhood dropdown — controls charts below only -->
+  <div class="neighborhood-selector" id="neighborhoodFilter">
+    <span class="filter-label">Cartiere afișate</span>
+    <div class="dropdown-wrap" id="neighborhoodDropdown">
+      <button class="dropdown-toggle" id="dropdownToggle">
+        <span class="dropdown-toggle-text" id="dropdownToggleText">Top 6 cartiere</span>
+        <span class="dropdown-chevron">
+          <svg viewBox="0 0 14 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 1l6 6 6-6" stroke="#048ba8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+      </button>
+      <div class="dropdown-menu" id="dropdownMenu">
+        <div id="dropdownItems"></div>
+        <div class="dropdown-actions">
+          <button id="ddSelectTop6" class="active">Top 6</button>
+          <button class="dd-reset" id="ddClear">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M12 4L4 12M4 4l8 8" stroke="#dc2626" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Resetează
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- CHART A — Line chart -->
   <div class="chart-card" id="cardA">
   <div class="chart-inner">
     <div class="card-header">
       <div>
-        <div class="card-title">Evoluție prețuri pe zone</div>
-        <div class="card-sub" id="chartASubtitle">Preț /m² · Apartament · Vânzare · Toate camerele · Mai 2024 – Apr 2026</div>
+        <div class="card-title">Evoluție prețuri pe cartiere</div>
+        <div class="card-sub" id="chartASubtitle">Preț /m² · Apartament · Vanzare · Toate camerele · Mai 2024 – Apr 2026</div>
       </div>
     </div>
     <div class="chart-legend" id="chartALegend"
-         role="group" aria-label="Serii — click pentru a ascunde sau afișa un sector"></div>
+         role="group" aria-label="Serii — click pentru a ascunde sau afișa un cartier"></div>
     <div class="chart-wrap">
-      <canvas id="chartA" role="img" aria-label="Grafic linie — evoluție prețuri pe sectoare"></canvas>
+      <canvas id="chartA" role="img" aria-label="Grafic linie — evoluție prețuri pe cartiere"></canvas>
     </div>
   </div>
   </div>
@@ -530,17 +982,17 @@
   <div class="chart-inner">
     <div class="card-header">
       <div>
-        <div class="card-title">Variație % pe zone</div>
-        <div class="card-sub" id="chartBSubtitle">Preț /m² — sectoarele Bucureștiului</div>
+        <div class="card-title">Variație % pe cartiere</div>
+        <div class="card-sub" id="chartBSubtitle">Preț /m² — cartierele Timișoarei</div>
       </div>
-      <div class="period-toggle" role="group" aria-label="Perioadă comparație">
-        <button class="period-btn active" data-period="yoy">% YoY</button>
-        <button class="period-btn"        data-period="mom">% MoM</button>
-        <button class="period-btn"        data-period="ytd">% de la 01/01/2025</button>
+      <div class="seg-control" role="group" aria-label="Perioadă comparație">
+        <button class="seg-item seg-active" data-period="yoy">% YoY</button>
+        <button class="seg-item"            data-period="mom">% MoM</button>
+        <button class="seg-item"            data-period="ytd">% de la 01/01/2025</button>
       </div>
     </div>
     <div class="chart-wrap" id="chartBWrap">
-      <canvas id="chartB" role="img" aria-label="Grafic bare — variație procentuală pe sectoare"></canvas>
+      <canvas id="chartB" role="img" aria-label="Grafic bare — variație procentuală pe cartiere"></canvas>
     </div>
     <p class="chart-caption" id="chartBCaption">
       Preț /m² și variația procentuală față de aceeași perioadă a anului anterior
@@ -553,8 +1005,6 @@
 <script>
 /* ════════════════════════════════════════════════════════════
    TOKEN RESOLUTION
-   Bridge CSS custom properties → Chart.js (which needs
-   resolved strings, not var() references).
 ════════════════════════════════════════════════════════════ */
 const _root = getComputedStyle(document.documentElement);
 const tok   = name => _root.getPropertyValue(name).trim();
@@ -577,10 +1027,21 @@ const T = {
   ],
 };
 
+/* Extended palette for > 6 neighborhoods in dropdown */
+const EXTRA_COLORS = [
+  '#7c3aed', '#0891b2', '#c2410c', '#4338ca',
+  '#a16207', '#0f766e', '#be185d', '#1d4ed8',
+];
+
+function getNeighborhoodColor(idx) {
+  if (idx < T.districts.length) return T.districts[idx];
+  return EXTRA_COLORS[(idx - T.districts.length) % EXTRA_COLORS.length];
+}
+
 /* ════════════════════════════════════════════════════════════
-   MOCK DATA
-   Source: district-chart-brief.md §6. Other filter combos
-   are generated by applying multipliers + deterministic noise.
+   MOCK DATA — Timișoara neighborhoods
+   Base: Apartament · Vanzare · Preț/m² · Toate camerele
+   Prices are realistic for Timișoara (lower than Bucharest)
 ════════════════════════════════════════════════════════════ */
 const MONTHS = [
   "Mai '24","Iun '24","Iul '24","Aug '24","Sep '24","Oct '24",
@@ -589,28 +1050,54 @@ const MONTHS = [
   "Nov '25","Dec '25","Ian '26","Feb '26","Mar '26","Apr '26"
 ];
 
-// Base: Apartament · Vânzare · Preț/m² · Toate camerele
+const ALL_NEIGHBORHOODS = [
+  "Elisabetin",
+  "Iosefin",
+  "Fabric",
+  "Lipovei",
+  "Circumvalațiunii",
+  "Giroc",
+  "Dumbravița",
+  "Aradului",
+  "Mehala",
+  "Freidorf",
+  "Complexul Studențesc",
+  "Ghiroda",
+];
+
 const BASE_PRICE = {
-  "Sector 1": [2450,2460,2475,2490,2510,2525,2540,2555,2570,2585,2600,2615,2625,2640,2660,2680,2695,2710,2730,2745,2760,2780,2800,2820],
-  "Sector 2": [1780,1790,1795,1805,1815,1825,1835,1845,1855,1865,1875,1885,1895,1905,1915,1925,1935,1945,1955,1965,1975,1985,1995,2005],
-  "Sector 3": [1690,1695,1700,1710,1720,1725,1735,1745,1755,1760,1770,1780,1790,1800,1810,1820,1830,1840,1850,1860,1870,1880,1890,1900],
-  "Sector 4": [1720,1730,1735,1745,1755,1760,1770,1780,1790,1800,1810,1815,1825,1835,1845,1855,1865,1875,1885,1895,1905,1915,1925,1935],
-  "Sector 5": [1580,1585,1590,1595,1605,1610,1620,1625,1635,1640,1650,1660,1670,1680,1685,1695,1705,1710,1720,1725,1735,1745,1755,1760],
-  "Sector 6": [1820,1830,1840,1850,1860,1870,1880,1890,1900,1910,1920,1930,1940,1950,1960,1970,1985,2000,2015,2025,2040,2055,2070,2085],
+  "Elisabetin":           [1680,1690,1700,1712,1725,1738,1748,1760,1772,1785,1798,1810,1822,1835,1848,1862,1875,1890,1905,1918,1932,1948,1962,1978],
+  "Iosefin":              [1580,1588,1596,1606,1616,1625,1635,1645,1656,1665,1676,1686,1696,1707,1718,1728,1740,1752,1764,1775,1788,1800,1812,1825],
+  "Fabric":               [1320,1325,1330,1338,1345,1352,1360,1368,1375,1382,1390,1398,1405,1412,1420,1428,1435,1442,1450,1458,1465,1472,1480,1488],
+  "Lipovei":              [1450,1458,1466,1475,1484,1492,1502,1512,1522,1530,1540,1550,1560,1570,1580,1590,1600,1612,1624,1635,1648,1660,1672,1685],
+  "Circumvalațiunii":     [1380,1386,1392,1400,1408,1415,1422,1430,1438,1445,1452,1460,1468,1475,1482,1490,1498,1505,1512,1520,1528,1535,1542,1550],
+  "Giroc":                [1520,1530,1540,1550,1562,1572,1582,1592,1605,1615,1628,1640,1652,1665,1678,1690,1702,1716,1730,1742,1756,1770,1785,1800],
+  "Dumbravița":           [1480,1488,1496,1505,1515,1524,1534,1544,1555,1564,1575,1586,1596,1608,1620,1630,1642,1655,1668,1680,1694,1708,1720,1735],
+  "Aradului":             [1250,1254,1258,1264,1270,1275,1282,1288,1295,1300,1308,1315,1322,1328,1335,1342,1350,1358,1365,1372,1380,1388,1395,1402],
+  "Mehala":               [1050,1052,1055,1058,1062,1065,1068,1072,1075,1078,1082,1085,1088,1092,1095,1098,1102,1105,1108,1112,1115,1118,1122,1125],
+  "Freidorf":             [1120,1124,1128,1132,1138,1142,1146,1152,1156,1160,1166,1170,1175,1180,1185,1190,1196,1200,1205,1210,1216,1222,1228,1232],
+  "Complexul Studențesc": [1180,1185,1190,1196,1202,1208,1214,1220,1226,1232,1238,1245,1252,1258,1265,1272,1278,1285,1292,1298,1305,1312,1320,1328],
+  "Ghiroda":              [1350,1356,1362,1370,1378,1385,1392,1400,1408,1415,1422,1430,1438,1445,1452,1460,1468,1476,1484,1492,1500,1508,1516,1525],
 };
-const BASE_CITY_AVG = [1840,1848,1856,1866,1878,1886,1897,1907,1918,1927,1938,1948,1958,1968,1980,1991,2003,2014,2026,2036,2048,2060,2073,2084];
+
+const BASE_CITY_AVG = [1365,1370,1376,1384,1392,1399,1407,1415,1424,1431,1440,1448,1457,1465,1474,1483,1492,1502,1512,1521,1532,1542,1553,1564];
 const BASE_NAT_AVG  = [1560,1565,1570,1578,1586,1592,1600,1608,1616,1624,1632,1640,1648,1656,1664,1672,1681,1690,1700,1708,1717,1727,1738,1748];
 
-// Base listings counts
 const BASE_ANUNTURI = {
-  "Sector 1": [420,435,418,440,458,445,430,395,410,425,442,460,475,492,480,465,450,462,478,490,502,515,530,545],
-  "Sector 2": [680,695,710,698,720,705,688,650,665,680,700,720,735,748,738,722,710,725,740,755,768,782,798,812],
-  "Sector 3": [720,735,748,760,775,762,745,705,718,730,748,768,785,800,790,775,760,775,792,808,822,838,854,870],
-  "Sector 4": [610,622,635,648,660,650,635,600,612,625,640,658,672,686,678,664,650,664,680,695,708,722,738,752],
-  "Sector 5": [380,390,398,408,418,410,400,378,386,396,408,420,432,442,435,425,415,425,436,448,458,468,480,492],
-  "Sector 6": [540,552,562,572,585,575,562,530,542,555,568,582,595,608,598,585,572,584,598,610,622,636,650,662],
+  "Elisabetin":           [185,192,188,196,205,198,190,175,182,190,198,206,212,220,215,208,200,208,216,222,228,235,242,250],
+  "Iosefin":              [165,170,175,172,178,174,168,158,162,168,174,180,186,192,188,184,178,184,190,196,200,206,212,218],
+  "Fabric":               [220,228,235,230,240,235,225,210,218,225,232,240,248,255,250,245,238,245,252,260,266,272,280,288],
+  "Lipovei":              [280,290,296,292,302,295,285,268,276,285,294,304,312,320,315,308,300,308,318,326,334,342,352,360],
+  "Circumvalațiunii":     [195,202,208,205,212,208,200,188,194,200,208,215,222,228,225,218,212,218,226,232,238,245,252,258],
+  "Giroc":                [310,322,330,325,338,330,318,300,308,318,328,340,350,360,354,345,336,345,356,365,374,384,395,405],
+  "Dumbravița":           [260,270,275,272,282,276,265,250,258,266,275,285,292,300,295,288,280,288,298,305,312,322,330,340],
+  "Aradului":             [175,180,186,182,190,185,178,166,172,178,185,192,198,205,200,195,188,195,202,208,214,220,228,234],
+  "Mehala":               [140,145,148,146,152,148,142,134,138,142,148,154,158,164,160,156,150,155,160,165,170,175,180,185],
+  "Freidorf":             [130,135,138,136,142,138,132,124,128,132,138,142,148,152,148,145,140,145,150,155,160,165,170,175],
+  "Complexul Studențesc": [155,160,165,162,168,164,158,148,152,158,164,170,176,182,178,174,168,174,180,186,192,198,205,210],
+  "Ghiroda":              [200,208,214,210,218,214,205,194,200,208,215,222,230,236,232,225,218,225,232,240,246,254,262,268],
 };
-const BASE_ANT_CITY = [2350,2429,2471,2526,2616,2547,2460,2258,2333,2411,2506,2608,2694,2776,2719,2641,2557,2635,2724,2806,2880,2961,3050,3134];
+const BASE_ANT_CITY = [2415,2502,2558,2528,2627,2565,2466,2265,2338,2430,2529,2630,2732,2814,2760,2693,2608,2692,2780,2860,2934,3018,3108,3191];
 const BASE_ANT_NAT  = [18200,18650,19100,19420,19800,19380,18850,17200,17680,18200,18820,19450,20100,20640,20200,19620,19050,19540,20120,20640,21100,21650,22200,22750];
 
 // Multipliers per filter dimension
@@ -620,7 +1107,6 @@ const ROOMS_MULT  = { toate:1.0, "1":0.76, "2":0.89, "3":1.01, "4plus":1.20 };
 const MARKET_ANT  = { vanzare:1.0, inchiriere:0.58, primar:0.33, secundar:0.67 };
 const ROOMS_ANT   = { toate:1.0,   "1":0.65, "2":0.72, "3":0.42, "4plus":0.18 };
 
-// Deterministic noise: gives plausible variation across filter combos
 function applyNoise(arr, seed) {
   return arr.map((v, i) => {
     const j = 1 + (Math.sin(seed * 997 + i * 41) * 0.5 + 0.5) * 0.04 - 0.02;
@@ -634,7 +1120,6 @@ function getDataset(st) {
   const roomsM = ROOMS_MULT[st.rooms]        ?? 1;
   const scale  = propM * mktM * roomsM;
 
-  // Stable seed from filter combo for consistent noise
   const seed = [st.analysis, st.propertyType, st.market, st.rooms]
     .join('').split('').reduce((a, c, i) => a + c.charCodeAt(0) * (i + 1), 0);
 
@@ -654,8 +1139,7 @@ function getDataset(st) {
     };
   }
 
-  // pretMp or pretMedian
-  const area = st.analysis === 'pretMedian' ? 52 : 1; // multiply by typical area for total price
+  const area = st.analysis === 'pretMedian' ? 52 : 1;
   const districts = {};
   for (const [k, arr] of Object.entries(BASE_PRICE)) {
     districts[k] = applyNoise(arr.map(v => Math.round(v * scale * area)), seed + k.charCodeAt(0));
@@ -668,16 +1152,16 @@ function getDataset(st) {
 }
 
 /* ════════════════════════════════════════════════════════════
-   NUMBER FORMATTING  — Romanian convention: . thousand, , decimal
+   NUMBER FORMATTING
 ════════════════════════════════════════════════════════════ */
-const CCY = '€'; // configurable constant per brief
+const CCY = '\u20AC';
 
 function fmtValue(v, st) {
   const s = Math.round(v).toLocaleString('de-DE');
   if (st.analysis === 'numarAnunturi') return `${s} anunțuri`;
   if (st.analysis === 'pretMedian')    return `${CCY}${s}`;
-  if (st.market === 'inchiriere')      return `${CCY}${v.toFixed(2).replace('.', ',')} /m²/lună`;
-  return `${CCY}${s} /m²`;
+  if (st.market === 'inchiriere')      return `${CCY}${v.toFixed(2).replace('.', ',')} /m\u00B2/lună`;
+  return `${CCY}${s} /m\u00B2`;
 }
 
 function fmtTick(v, st) {
@@ -698,22 +1182,206 @@ function fmtPct(v) {
 /* ════════════════════════════════════════════════════════════
    STATE
 ════════════════════════════════════════════════════════════ */
-const DISTRICTS = Object.keys(BASE_PRICE); // ordered list
-
 const state = {
   analysis:     'pretMp',
   propertyType: 'apartament',
   market:       'vanzare',
   rooms:        'toate',
   period:       'yoy',
+  cardsPeriod:  'yoy',
 };
 
+// Selected neighborhoods — default to top 6 by latest price
+let selectedNeighborhoods = new Set();
 const hiddenDistricts = new Set();
+
+function getTop6() {
+  const data = getDataset(state);
+  const lastIdx = MONTHS.length - 1;
+  return ALL_NEIGHBORHOODS
+    .map(n => ({ name: n, price: data.districts[n][lastIdx] }))
+    .sort((a, b) => b.price - a.price)
+    .slice(0, 6)
+    .map(e => e.name);
+}
+
+function initSelection() {
+  selectedNeighborhoods = new Set(getTop6());
+}
+
+function getVisibleNeighborhoods() {
+  return ALL_NEIGHBORHOODS.filter(n => selectedNeighborhoods.has(n));
+}
+
+/* ════════════════════════════════════════════════════════════
+   SUMMARY CARDS
+════════════════════════════════════════════════════════════ */
+const PERIOD_REF = { yoy: 11, mom: 22, ytd: 8 };
+
+function arrowUp() {
+  return '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 2.5v7M3 5.5l3-3 3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+}
+function arrowDown() {
+  return '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 9.5v-7M3 6.5l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+}
+
+function buildSparkline(values, color) {
+  // Use last 12 data points for a compact trend line
+  const pts = values.slice(-12);
+  const min = Math.min(...pts);
+  const max = Math.max(...pts);
+  const range = max - min || 1;
+  const w = 100;
+  const h = 28;
+  const pad = 2;
+  const parsed = pts.map((v, i) => ({
+    x: pad + (i / (pts.length - 1)) * (w - pad * 2),
+    y: pad + (1 - (v - min) / range) * (h - pad * 2),
+  }));
+  const coords = parsed.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+
+  // Approximate polyline length for stroke-dasharray animation
+  let len = 0;
+  for (let i = 1; i < parsed.length; i++) {
+    const dx = parsed[i].x - parsed[i - 1].x;
+    const dy = parsed[i].y - parsed[i - 1].y;
+    len += Math.sqrt(dx * dx + dy * dy);
+  }
+  const lenStr = Math.ceil(len);
+
+  return `<svg class="summary-card-sparkline" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+    <polyline points="${coords}" stroke="${color}" style="--spark-len:${lenStr}" />
+  </svg>`;
+}
+
+function renderSummaryCards() {
+  const data    = getDataset(state);
+  const lastIdx = MONTHS.length - 1;
+  const refIdx  = PERIOD_REF[state.cardsPeriod] ?? 11;
+
+  const ranked = ALL_NEIGHBORHOODS.map(name => {
+    const arr     = data.districts[name];
+    const current = arr[lastIdx];
+    const ref     = arr[refIdx];
+    const pct     = ref > 0 ? ((current - ref) / ref) * 100 : 0;
+    return { name, current, pct, series: arr };
+  }).sort((a, b) => b.current - a.current);
+
+  const top3    = ranked.slice(0, 3);
+  const bottom3 = ranked.slice(-3).reverse();
+
+  const periodLabel = { yoy: 'YoY', mom: 'MoM', ytd: 'YTD' }[state.cardsPeriod];
+
+  function buildCard(item, rank) {
+    const up   = item.pct >= 0;
+    const good = up;
+    const priceStr = state.analysis === 'numarAnunturi'
+      ? Math.round(item.current).toLocaleString('de-DE')
+      : `${CCY}${Math.round(item.current).toLocaleString('de-DE')}`;
+    const unitStr = state.analysis === 'numarAnunturi' ? ' anunțuri' :
+                    state.analysis === 'pretMedian' ? '' : ' /m\u00B2';
+    const sparkColor = good ? T.success : T.brand;
+
+    return `
+      <div class="summary-card">
+        <div class="summary-card-inner">
+          <div class="summary-card-label">${item.name}</div>
+          <div class="summary-card-value">${priceStr}${unitStr}</div>
+          ${buildSparkline(item.series, sparkColor)}
+          <div class="summary-card-badges">
+            <span class="badge ${good ? 'badge-pos' : 'badge-neg'}">${up ? '\u2191' : '\u2193'} ${Math.abs(item.pct).toFixed(1)}% ${periodLabel}</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  document.getElementById('summaryExpensive').innerHTML = top3.map((item, i) => buildCard(item, i + 1)).join('');
+  document.getElementById('summaryCheap').innerHTML     = bottom3.map((item, i) => buildCard(item, ALL_NEIGHBORHOODS.length - 2 + i)).join('');
+}
+
+/* ════════════════════════════════════════════════════════════
+   NEIGHBORHOOD DROPDOWN
+════════════════════════════════════════════════════════════ */
+const SORTED_NEIGHBORHOODS = [...ALL_NEIGHBORHOODS].sort((a, b) => a.localeCompare(b, 'ro'));
+
+function renderDropdown() {
+  const container = document.getElementById('dropdownItems');
+  const atMax = selectedNeighborhoods.size >= 6;
+
+  container.innerHTML =
+    SORTED_NEIGHBORHOODS.map(name => {
+      const checked  = selectedNeighborhoods.has(name);
+      const disabled = atMax && !checked;
+      return `
+        <label class="dropdown-item${disabled ? ' disabled-item' : ''}">
+          <input type="checkbox" value="${name}" ${checked ? 'checked' : ''} ${disabled ? 'disabled' : ''}>
+          ${name}
+        </label>`;
+    }).join('');
+
+  container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+    cb.addEventListener('change', () => {
+      if (cb.checked) {
+        selectedNeighborhoods.add(cb.value);
+      } else {
+        selectedNeighborhoods.delete(cb.value);
+      }
+      hiddenDistricts.clear();
+      renderDropdown(); // re-render to update disabled states
+      render();
+    });
+  });
+
+  updateDropdownLabel();
+}
+
+function updateDropdownLabel() {
+  const txt   = document.getElementById('dropdownToggleText');
+  const count = selectedNeighborhoods.size;
+  if (count === 0) {
+    txt.textContent = 'Selectează cartiere';
+  } else {
+    txt.textContent = `${count}/6 cartiere selectate`;
+  }
+  updateTop6Active();
+}
+
+function updateTop6Active() {
+  const top6 = new Set(getTop6());
+  const isTop6 = top6.size === selectedNeighborhoods.size &&
+    [...top6].every(n => selectedNeighborhoods.has(n));
+  document.getElementById('ddSelectTop6').classList.toggle('active', isTop6);
+  document.getElementById('ddClear').disabled = isTop6;
+}
+
+// Toggle dropdown
+document.getElementById('dropdownToggle').addEventListener('click', () => {
+  document.getElementById('neighborhoodDropdown').classList.toggle('open');
+});
+
+// Close dropdown on outside click
+document.addEventListener('click', (e) => {
+  const dd = document.getElementById('neighborhoodDropdown');
+  if (!dd.contains(e.target)) dd.classList.remove('open');
+});
+
+// Quick-select actions
+document.getElementById('ddSelectTop6').addEventListener('click', () => {
+  selectedNeighborhoods = new Set(getTop6());
+  hiddenDistricts.clear();
+  renderDropdown();
+  render();
+});
+document.getElementById('ddClear').addEventListener('click', () => {
+  selectedNeighborhoods = new Set(getTop6());
+  hiddenDistricts.clear();
+  renderDropdown();
+  render();
+});
 
 /* ════════════════════════════════════════════════════════════
    PCT-LABEL PLUGIN FOR CHART B
-   Draws % change text at the right end of each bar.
-   Uses a module-level array so the plugin stays stateless.
 ════════════════════════════════════════════════════════════ */
 let _chartBPcts = [];
 
@@ -765,13 +1433,14 @@ let chartA = null;
 
 function buildADatasets(data) {
   const ds = [];
+  const visible = getVisibleNeighborhoods();
 
-  DISTRICTS.forEach((name, i) => {
+  visible.forEach((name, i) => {
     ds.push({
       label:       name,
       data:        data.districts[name],
-      borderColor: T.districts[i],
-      pointHoverBackgroundColor: T.districts[i],
+      borderColor: getNeighborhoodColor(i),
+      pointHoverBackgroundColor: getNeighborhoodColor(i),
       borderWidth: 2,
       tension:     0.3,
       pointRadius: 0,
@@ -781,7 +1450,6 @@ function buildADatasets(data) {
     });
   });
 
-  // City average — thick dashed, always visible
   ds.push({
     label:       'Media orașului',
     data:        data.cityAvg,
@@ -796,7 +1464,6 @@ function buildADatasets(data) {
     _pinned:     true,
   });
 
-  // National average — dotted, always visible
   ds.push({
     label:       'Media națională',
     data:        data.nationalAvg,
@@ -817,18 +1484,19 @@ function buildADatasets(data) {
 function renderALegend() {
   const container = document.getElementById('chartALegend');
   container.innerHTML = '';
+  const visible = getVisibleNeighborhoods();
 
-  DISTRICTS.forEach((name, i) => {
+  visible.forEach((name, i) => {
     const hidden = hiddenDistricts.has(name);
     const btn    = document.createElement('button');
     btn.className = 'legend-btn' + (hidden ? ' hidden' : '');
-    btn.style.color = T.districts[i];
+    btn.style.color = getNeighborhoodColor(i);
     btn.setAttribute('aria-pressed', String(!hidden));
     btn.setAttribute('aria-label', `${name} — ${hidden ? 'afișează' : 'ascunde'}`);
     btn.innerHTML = `<span class="legend-swatch"></span>${name}`;
     btn.addEventListener('click', () => {
       hiddenDistricts.has(name) ? hiddenDistricts.delete(name) : hiddenDistricts.add(name);
-      const idx = DISTRICTS.indexOf(name);
+      const idx = visible.indexOf(name);
       chartA.data.datasets[idx].hidden = hiddenDistricts.has(name);
       chartA.update();
       renderALegend();
@@ -836,7 +1504,6 @@ function renderALegend() {
     container.appendChild(btn);
   });
 
-  // City avg — pinned legend item
   const cityBtn = document.createElement('button');
   cityBtn.className   = 'legend-btn pinned';
   cityBtn.style.color = T.cityAvg;
@@ -845,7 +1512,6 @@ function renderALegend() {
   cityBtn.innerHTML   = `<span class="legend-swatch dashed"></span>Media orașului`;
   container.appendChild(cityBtn);
 
-  // National avg — pinned legend item
   const natBtn = document.createElement('button');
   natBtn.className   = 'legend-btn pinned';
   natBtn.style.color = T.natAvg;
@@ -880,11 +1546,9 @@ function initChartA(data) {
           cornerRadius:    8,
           boxPadding:      5,
           usePointStyle:   true,
-          // Hide hidden series from tooltip
           filter(item) {
             return !item.dataset.hidden;
           },
-          // Pinned series always last; district series sorted descending
           itemSort(a, b) {
             if (a.dataset._pinned && !b.dataset._pinned) return  1;
             if (!a.dataset._pinned && b.dataset._pinned) return -1;
@@ -896,7 +1560,6 @@ function initChartA(data) {
               const val    = ctx.parsed.y;
               const fVal   = fmtValue(val, state);
               if (ctx.dataset._pinned) return `  ${ctx.dataset.label}: ${fVal}`;
-              // Show Δ vs city average
               const cityDs  = ctx.chart.data.datasets.find(d => d.label === 'Media orașului');
               const cityVal = cityDs?.data[ctx.dataIndex];
               if (!cityVal) return `  ${ctx.dataset.label}: ${fVal}`;
@@ -938,35 +1601,26 @@ function initChartA(data) {
 
 /* ════════════════════════════════════════════════════════════
    CHART B — HORIZONTAL BAR CHART
-   Bar length = current price/m²
-   Bar colour  = % change direction (success/danger/neutral)
-   Inline label at bar end = % change
 ════════════════════════════════════════════════════════════ */
 let chartB = null;
-
-// Reference month indices (MONTHS array: 0=Mai'24 … 23=Apr'26)
-// YoY: Apr'26 vs Apr'25 (idx 23 vs 11)
-// MoM: Apr'26 vs Mar'26 (idx 23 vs 22)
-// YTD: Apr'26 vs Jan'25 (idx 23 vs 8)
-const PERIOD_REF = { yoy: 11, mom: 22, ytd: 8 };
 
 function initChartB(data) {
   if (chartB) { chartB.destroy(); chartB = null; }
 
+  const visible = getVisibleNeighborhoods();
   const lastIdx = MONTHS.length - 1;
   const refIdx  = PERIOD_REF[state.period] ?? 11;
 
-  const entries = DISTRICTS.map((name, i) => {
+  const entries = visible.map((name, i) => {
     const arr     = data.districts[name];
     const current = arr[lastIdx];
     const ref     = arr[refIdx];
     const pct     = ref > 0 ? ((current - ref) / ref) * 100 : 0;
-    return { name, current, pct, color: T.districts[i] };
-  }).sort((a, b) => b.current - a.current); // descending by price
+    return { name, current, pct, color: getNeighborhoodColor(i) };
+  }).sort((a, b) => b.current - a.current);
 
   _chartBPcts = entries.map(e => e.pct);
 
-  // Dynamic canvas height based on bar count
   const barH   = 44;
   const vPad   = 28;
   document.getElementById('chartBWrap').style.height = (entries.length * barH + vPad * 2) + 'px';
@@ -1038,9 +1692,9 @@ function initChartB(data) {
 /* ════════════════════════════════════════════════════════════
    SUBTITLES & CAPTIONS
 ════════════════════════════════════════════════════════════ */
-const ANA_LBL  = { pretMp:'Preț /m²', pretMedian:'Preț median', numarAnunturi:'Nr. anunțuri' };
+const ANA_LBL  = { pretMp:'Preț /m\u00B2', pretMedian:'Preț median', numarAnunturi:'Nr. anunțuri' };
 const PROP_LBL = { apartament:'Apartament', casa:'Casă', teren:'Teren' };
-const MKT_LBL  = { vanzare:'Vânzare', inchiriere:'Închiriere', primar:'Primar', secundar:'Secundar' };
+const MKT_LBL  = { vanzare:'Vanzare', inchiriere:'Închiriere', primar:'Primar', secundar:'Secundar' };
 const RMS_LBL  = { toate:'Toate camerele', "1":'1 cameră', "2":'2 camere', "3":'3 camere', "4plus":'4+ camere' };
 const PER_CAP  = {
   yoy: 'față de aceeași perioadă a anului anterior',
@@ -1053,50 +1707,76 @@ function updateLabels() {
   document.getElementById('chartASubtitle').textContent =
     `${a} · ${PROP_LBL[state.propertyType]} · ${MKT_LBL[state.market]} · ${RMS_LBL[state.rooms]} · Mai 2024 – Apr 2026`;
   document.getElementById('chartBSubtitle').textContent =
-    `${a} — sectoarele Bucureștiului`;
+    `${a} — cartierele Timișoarei`;
   document.getElementById('chartBCaption').textContent =
     `${a} și variația procentuală ${PER_CAP[state.period]}`;
 }
 
 /* ════════════════════════════════════════════════════════════
-   RENDER — destroys and recreates both charts
+   RENDER
 ════════════════════════════════════════════════════════════ */
 function render() {
   const data = getDataset(state);
+  renderSummaryCards();
   initChartA(data);
   initChartB(data);
   updateLabels();
 }
 
-render(); // initial render
+initSelection();
+renderDropdown();
+render();
 
 /* ════════════════════════════════════════════════════════════
    FILTER BAR INTERACTIONS
 ════════════════════════════════════════════════════════════ */
-document.querySelectorAll('.filter-bar button.pill').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const filter = btn.dataset.filter;
-    const val    = btn.dataset.val;
-    if (state[filter] === val) return; // no-op if already active
-    state[filter] = val;
+// Shared handler for pill and seg-item filter buttons
+function handleFilterClick(btn) {
+  const filter = btn.dataset.filter;
+  const val    = btn.dataset.val;
+  if (state[filter] === val) return;
+  state[filter] = val;
 
-    btn.closest('.filter-group').querySelectorAll('.pill').forEach(p =>
-      p.classList.toggle('active', p === btn)
+  // Update active class within the same group
+  const group = btn.closest('.filter-group');
+  group.querySelectorAll('.pill').forEach(p => p.classList.toggle('active', p === btn));
+  group.querySelectorAll('.seg-item').forEach(s => s.classList.toggle('seg-active', s === btn));
+
+  hiddenDistricts.clear();
+  selectedNeighborhoods = new Set(getTop6());
+  renderDropdown();
+  render();
+}
+
+document.querySelectorAll('.filter-bar button.pill').forEach(btn => {
+  btn.addEventListener('click', () => handleFilterClick(btn));
+});
+document.querySelectorAll('.filter-bar button.seg-item').forEach(btn => {
+  btn.addEventListener('click', () => handleFilterClick(btn));
+});
+
+/* Summary cards period toggle */
+document.querySelectorAll('#summaryPeriodToggle .seg-item').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (state.cardsPeriod === btn.dataset.period) return;
+    state.cardsPeriod = btn.dataset.period;
+
+    document.querySelectorAll('#summaryPeriodToggle .seg-item').forEach(b =>
+      b.classList.toggle('seg-active', b === btn)
     );
 
-    hiddenDistricts.clear(); // fresh context, reset visibility
-    render();
+    renderSummaryCards();
   });
 });
 
-/* Period toggle — only Chart B needs updating */
-document.querySelectorAll('.period-btn').forEach(btn => {
+/* Chart B period toggle */
+document.querySelectorAll('#cardB .seg-item').forEach(btn => {
   btn.addEventListener('click', () => {
     if (state.period === btn.dataset.period) return;
     state.period = btn.dataset.period;
 
-    document.querySelectorAll('.period-btn').forEach(b =>
-      b.classList.toggle('active', b === btn)
+    document.querySelectorAll('#cardB .seg-item').forEach(b =>
+      b.classList.toggle('seg-active', b === btn)
     );
 
     const data = getDataset(state);
@@ -1137,8 +1817,7 @@ document.getElementById('mobileFilterBtn').addEventListener('click', () => {
   btn.setAttribute('aria-expanded', isOpen);
 });
 
-// Patch filter bar interactions to also update mobile UI
-document.querySelectorAll('.filter-bar button.pill').forEach(btn => {
+document.querySelectorAll('.filter-bar button.pill, .filter-bar button.seg-item').forEach(btn => {
   btn.addEventListener('click', updateMobileFilterUI);
 });
 
