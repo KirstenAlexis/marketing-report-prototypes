@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Harta Prețurilor — Timișoara</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Unbounded:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    :root {
+      --color-primary:#e71e41; --color-primary-700:#b31e38; --color-secondary:#048ba8;
+      --text-heading:#111827; --text-body:#374151; --text-subtle:#4b5563; --text-muted:#6b7280;
+      --surface:#ffffff; --surface-tray:#f3f4f6; --border:#d1d5db; --border-control:#6b7280;
+      --active-bg:#e6f3f6; --active-text:#0b778e; --focus:#048ba8;
+      --positive:#3f6212; --negative:#b91c1c; --stable:#6b7280;
+      --scale-1:#048ba8; --scale-2:#9bd1dc; --scale-3:#f0eeea; --scale-4:#f28396; --scale-5:#e71e41;
+      --font-base:'Manrope',sans-serif; --font-display:'Unbounded',sans-serif;
+      --radius-sm:6px; --radius-base:8px; --radius-lg:12px; --radius-tray:18px;
+      --shadow-card:0px 2px 6px rgba(0,0,0,.06),0px 1px 2px rgba(0,0,0,.04);
+      --shadow-tooltip:0 4px 24px rgba(17,24,39,.13),0 1px 4px rgba(17,24,39,.07);
+      --shadow-modal:0 20px 60px rgba(17,24,39,.2);
+    }
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:var(--font-base);background:var(--surface);color:var(--text-heading);-webkit-font-smoothing:antialiased}
+    .page-container{max-width:1200px;margin:0 auto;padding:56px 48px}
+    .section-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:16px;animation:fadeUp .5s ease both}
+    .section-title{font-family:var(--font-display);font-size:26px;font-weight:700;line-height:32px;margin-bottom:4px}
+    .section-subtitle{font-size:14px;font-weight:400;color:var(--text-muted)}
+    .card-tray{background:var(--surface-tray);border-radius:var(--radius-tray);padding:8px;animation:fadeUp .5s ease .1s both}
+    .card-inner{background:var(--surface);border-radius:var(--radius-lg);padding:24px;box-shadow:var(--shadow-card);position:relative}
+    .card-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px}
+    .card-title{font-size:20px;font-weight:600;line-height:28px}
+    .gate-toggle{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--text-muted);background:none;border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 10px;font-family:var(--font-base);transition:all .14s ease;white-space:nowrap;flex-shrink:0}
+    .gate-toggle:hover{color:var(--active-text);border-color:var(--active-text)}
+    .gate-toggle.active{background:var(--active-bg);color:var(--active-text);border-color:var(--active-text)}
+    .gate-toggle-dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:background .14s ease}
+    .gate-toggle.active .gate-toggle-dot{background:var(--active-text)}
+    .filter-bar{display:flex;align-items:flex-end;gap:16px;margin-bottom:16px;flex-wrap:wrap}
+    .filter-group{display:flex;flex-direction:column;gap:6px}
+    .filter-label{font-size:12px;font-weight:400;color:var(--text-subtle)}
+    .segmented-control{display:flex}
+    .seg-btn{height:44px;padding:10px 16px;font-family:var(--font-base);font-size:16px;font-weight:400;color:var(--text-body);background:var(--surface);border:1px solid var(--border-control);cursor:pointer;transition:all .14s ease;white-space:nowrap}
+    .seg-btn:first-child{border-radius:var(--radius-base) 0 0 var(--radius-base)}
+    .seg-btn:last-child{border-radius:0 var(--radius-base) var(--radius-base) 0}
+    .seg-btn+.seg-btn{margin-left:-1px}
+    .seg-btn:hover:not(.active){color:var(--active-text)}
+    .seg-btn.active{background:var(--active-bg);color:var(--active-text);position:relative;z-index:1}
+    .seg-btn:focus-visible{outline:2px solid var(--focus);outline-offset:-2px;z-index:2}
+    .legend{display:flex;align-items:center;gap:16px;margin-bottom:16px;flex-wrap:wrap}
+    .legend-item{display:flex;align-items:center;gap:6px}
+    .legend-swatch{width:12px;height:12px;border-radius:2px;flex-shrink:0}
+    .legend-swatch.nodata{background:#e5e7eb;background-image:repeating-linear-gradient(-45deg,transparent,transparent 2px,rgba(0,0,0,.08) 2px,rgba(0,0,0,.08) 4px)}
+    .legend-label{font-size:12px;font-weight:400;color:var(--text-subtle)}
+    #map{width:100%;height:500px;border-radius:8px;z-index:1}
+    .zone-label{font-family:'Manrope',sans-serif;font-size:12px;font-weight:700;color:#111827;text-shadow:0 0 4px rgba(255,255,255,.9),0 0 8px rgba(255,255,255,.7);background:none!important;border:none!important;box-shadow:none!important}
+    .zone-label.muted{font-weight:500;font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.04em}
+    .leaflet-popup-content-wrapper{border-radius:12px!important;box-shadow:var(--shadow-tooltip)!important;font-family:var(--font-base)!important}
+    .leaflet-popup-content{margin:14px 16px!important;min-width:180px}
+    .tt-name{font-weight:800;font-size:13px;margin-bottom:8px;padding-bottom:7px;border-bottom:1px solid var(--border);color:var(--text-heading)}
+    .tt-price{font-size:15px;font-weight:700;color:var(--text-heading);margin-bottom:6px}
+    .tt-trend{font-size:12px;display:flex;align-items:center;gap:4px}
+    .tt-trend.up{color:var(--positive)} .tt-trend.down{color:var(--negative)} .tt-trend.stable{color:var(--stable)}
+    .tt-swatch{display:inline-block;width:8px;height:8px;border-radius:2px}
+    .map-wrap{position:relative}
+    .login-gate{position:absolute;inset:0;border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s ease;z-index:50}
+    .login-gate.active{opacity:1;pointer-events:auto}
+    .login-gate-backdrop{position:absolute;inset:0;background:rgba(255,255,255,.35);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+    .login-gate-card{position:relative;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:0 2px 4px rgba(0,0,0,.04),0 6px 16px rgba(0,0,0,.08),0 12px 28px rgba(0,0,0,.06);padding:25px 17px 9px;max-width:380px;text-align:center;display:flex;flex-direction:column;gap:12px}
+    .login-gate-heading{font-size:18px;font-weight:600;line-height:18px;letter-spacing:.4px;color:var(--text-heading)}
+    .login-gate-subtext{font-size:14px;color:var(--text-heading);line-height:20px}
+    .login-gate-cta{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:48px;min-height:48px;padding:12px 24px;background:var(--color-primary);color:#fff;font-family:var(--font-base);font-size:16px;font-weight:600;border:none;border-radius:var(--radius-base);cursor:pointer;transition:background .14s ease;width:100%}
+    .login-gate-cta:hover{background:var(--color-primary-700)}
+    .login-gate-cta svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+    .login-gate-footer{font-size:14px;padding:16px 0;text-align:center}
+    .login-gate-footer span{color:var(--text-body)}
+    .login-gate-link{font-size:14px;font-weight:600;color:var(--active-text);text-decoration:none}
+    .login-gate-link:hover{text-decoration:underline}
+    /* Bottom sheet (mobile) */
+    .bottom-sheet{
+      display:none;position:fixed;bottom:0;left:0;right:0;
+      background:var(--surface);border-radius:16px 16px 0 0;
+      box-shadow:0 -4px 24px rgba(17,24,39,.12);
+      padding:12px 20px calc(20px + env(safe-area-inset-bottom, 0px));z-index:10000;
+      transform:translateY(100%);transition:transform .25s cubic-bezier(.4,0,.2,1);
+    }
+    .bottom-sheet.visible{transform:translateY(0)}
+    .bottom-sheet-handle{width:36px;height:4px;border-radius:2px;background:var(--border);margin:0 auto 14px}
+    .bottom-sheet-name{font-weight:800;font-size:15px;color:var(--text-heading);margin-bottom:6px}
+    .bottom-sheet-price{font-size:17px;font-weight:700;color:var(--text-heading);margin-bottom:8px}
+    .bottom-sheet-trend{font-size:13px;display:flex;align-items:center;gap:5px}
+    .bottom-sheet-trend.up{color:var(--positive)} .bottom-sheet-trend.down{color:var(--negative)} .bottom-sheet-trend.stable{color:var(--stable)}
+    @media(max-width:640px){.bottom-sheet{display:block}}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+    @media(max-width:900px){.page-container{padding:40px 28px}}
+    @media(max-width:640px){
+      .page-container{padding:28px 16px}.card-inner{padding:16px}.section-title{font-size:22px}
+      .filter-bar{flex-direction:column;align-items:stretch;gap:12px}.segmented-control{width:100%}
+      .seg-btn{flex:1;text-align:center}.legend{gap:10px}.card-header{flex-direction:column;gap:12px}
+      #map{height:380px}
+    }
+  </style>
+</head>
+<body>
+  <div class="page-container">
+    <div class="section-header">
+      <div>
+        <h2 class="section-title" style="font-family:var(--font-base)">Price map by neighbourhood</h2>
+        <p class="section-subtitle">Prețuri mediane pe cartiere în Timișoara</p>
+      </div>
+      <button class="gate-toggle" id="gateToggle" onclick="toggleLoginGate()"><span class="gate-toggle-dot"></span>Preview login gate</button>
+    </div>
+    <div class="card-tray"><div class="card-inner">
+      <div class="filter-bar">
+        <div class="filter-group"><span class="filter-label">Tip proprietate</span>
+          <div class="segmented-control"><button class="seg-btn active" data-value="apartments" onclick="setFilter('property','apartments',this)">Apartamente</button><button class="seg-btn" data-value="houses" onclick="setFilter('property','houses',this)">Case</button></div>
+        </div>
+        <div class="filter-group"><span class="filter-label">Piață</span>
+          <div class="segmented-control"><button class="seg-btn active" data-value="sale" onclick="setFilter('market','sale',this)">Vânzare</button><button class="seg-btn" data-value="rent" onclick="setFilter('market','rent',this)">Închiriere</button></div>
+        </div>
+      </div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-swatch" style="background:var(--scale-1)"></div><span class="legend-label">Accesibil</span></div>
+        <div class="legend-item"><div class="legend-swatch" style="background:var(--scale-2)"></div><span class="legend-label">Sub medie</span></div>
+        <div class="legend-item"><div class="legend-swatch" style="background:var(--scale-3)"></div><span class="legend-label">Mediu</span></div>
+        <div class="legend-item"><div class="legend-swatch" style="background:var(--scale-4)"></div><span class="legend-label">Peste medie</span></div>
+        <div class="legend-item"><div class="legend-swatch" style="background:var(--scale-5)"></div><span class="legend-label">Premium</span></div>
+        <div class="legend-item"><div class="legend-swatch nodata"></div><span class="legend-label">Date insuficiente</span></div>
+      </div>
+      <div class="map-wrap">
+        <div id="map"></div>
+        <div class="login-gate" id="loginGate">
+          <div class="login-gate-backdrop"></div>
+          <div class="login-gate-card">
+            <h3 class="login-gate-heading">Descoperă prețurile pe cartiere</h3>
+            <p class="login-gate-subtext">Creează un cont gratuit pentru a vedea datele detaliate despre prețurile imobiliare din fiecare cartier.</p>
+            <div>
+              <button class="login-gate-cta">Intră în cont <svg viewBox="0 0 20 20"><path d="M4 10h12M12 5l5 5-5 5"/></svg></button>
+              <div class="login-gate-footer"><span>Nu ai cont? </span><a href="#" class="login-gate-link">Fă-ți unul nou</a></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </div>
+  <!-- Bottom sheet outside all containers so it's truly full-width -->
+  <div class="bottom-sheet" id="bottomSheet">
+    <div class="bottom-sheet-handle"></div>
+    <div class="bottom-sheet-name" id="bsName"></div>
+    <div class="bottom-sheet-price" id="bsPrice"></div>
+    <div class="bottom-sheet-trend" id="bsTrend"></div>
+  </div>
+  <script>
+  const geoData = {"type":"FeatureCollection","features":[{"type":"Feature","properties":{"name":"Elisabetin","type":"suburb","isCommune":false},"geometry":{"type":"Polygon","coordinates":[[[21.2129584,45.7430097],[21.2130728,45.7431285],[21.2155696,45.7457285],[21.2182639,45.7481995],[21.218664,45.7484102],[21.218701,45.7484297],[21.2198648,45.7490589],[21.2199728,45.7491121],[21.2201781,45.749234],[21.2202705,45.7492884],[21.220345,45.7492627],[21.2205456,45.7491774],[21.2209955,45.7490472],[21.2219349,45.7487867],[21.2237083,45.7482988],[21.2240043,45.7482285],[21.2244198,45.7481507],[21.2247981,45.7480567],[21.2253311,45.7480161],[21.2254488,45.7480012],[21.2256722,45.7479725],[21.2257428,45.7479607],[21.2263524,45.7478795],[21.2266684,45.7478375],[21.2270008,45.7477707],[21.2272043,45.7477651],[21.2275512,45.7477576],[21.2280012,45.7477545],[21.2283809,45.7477518],[21.2290981,45.747786],[21.2310965,45.747975],[21.2311604,45.7479823],[21.2312323,45.7479943],[21.2313086,45.7480047],[21.2313707,45.7480163],[21.2320714,45.7481195],[21.2321785,45.748139],[21.2338266,45.7484932],[21.2351988,45.7488887],[21.2354076,45.7489492],[21.2353076,45.74724],[21.2354796,45.7464077],[21.2359227,45.7453125],[21.2369544,45.7436042],[21.2379292,45.7423021],[21.2385477,45.7414798],[21.2385522,45.741378],[21.2382604,45.7386936],[21.2311352,45.7365387],[21.23097,45.7364942],[21.230873,45.7364675],[21.2271039,45.7352704],[21.2266321,45.7351224],[21.2240042,45.7341298],[21.2226345,45.7336923],[21.2192172,45.7330637],[21.2191908,45.7334469],[21.2191112,45.733878],[21.2188632,45.7341873],[21.2185289,45.7347719],[21.2130168,45.7429069],[21.2129584,45.7430097]]]}},{"type":"Feature","properties":{"name":"Iosefin","type":"suburb","isCommune":false},"geometry":{"type":"Polygon","coordinates":[[[21.1850989,45.7414376],[21.1852463,45.7433552],[21.1863833,45.7459605],[21.1901544,45.7485127],[21.1897565,45.7500466],[21.1897375,45.7507607],[21.1965975,45.7519507],[21.1996675,45.7525061],[21.2015056,45.7525722],[21.2054283,45.7530879],[21.2093131,45.7535639],[21.2096921,45.7528896],[21.2128189,45.7523342],[21.2159267,45.7521094],[21.2167227,45.7501921],[21.2183524,45.7507078],[21.2195841,45.7505359],[21.2215447,45.7498826],[21.2207047,45.7495027],[21.2202705,45.7492884],[21.2192421,45.7487308],[21.2182639,45.7481995],[21.2165443,45.7466375],[21.2129584,45.7430097],[21.2118525,45.7415963],[21.2100332,45.7391628],[21.204045,45.7382502],[21.1978482,45.7369144],[21.1963445,45.7366162],[21.1938875,45.7350399],[21.1923527,45.7339516],[21.1889237,45.7366137],[21.1870656,45.7380915],[21.1856443,45.740168],[21.1850989,45.7414376]]]}},{"type":"Feature","properties":{"name":"Fabric","type":"suburb","isCommune":false},"geometry":{"type":"Polygon","coordinates":[[[21.2403346,45.7540712],[21.2415664,45.7565437],[21.2423371,45.757604],[21.2439731,45.7585666],[21.2454133,45.7591484],[21.2468156,45.7595847],[21.2489001,45.7601003],[21.2527091,45.7611183],[21.2539977,45.7615546],[21.2547448,45.7615432],[21.2548694,45.7615413],[21.2582805,45.7601003],[21.2585797,45.7596626],[21.2561217,45.7575337],[21.2545034,45.7557897],[21.2544545,45.7548978],[21.2509543,45.752601],[21.2505321,45.752373],[21.25218,45.7510016],[21.2528869,45.749676],[21.2531968,45.7489743],[21.2493262,45.7480356],[21.2469663,45.7492124],[21.2460436,45.7505151],[21.2461334,45.750792],[21.2459792,45.7511296],[21.2454756,45.751043],[21.2449567,45.751582],[21.2447535,45.7519021],[21.244542,45.7530575],[21.2443521,45.7544811],[21.2403346,45.7540712]]]}},{"type":"Feature","properties":{"name":"Mehala","type":"suburb","isCommune":false},"geometry":{"type":"Polygon","coordinates":[[[21.1949548,45.7632568],[21.1950306,45.7637591],[21.1954647,45.766666],[21.1960682,45.7690198],[21.1964625,45.769828],[21.1992574,45.773813],[21.2012495,45.7722503],[21.2017851,45.7721336],[21.2036093,45.7719585],[21.2052828,45.7722386],[21.2067221,45.7720519],[21.2076432,45.771634],[21.2087806,45.771118],[21.2106628,45.7700691],[21.2117763,45.7694486],[21.2169979,45.7678959],[21.2148225,45.766581],[21.2118184,45.7645003],[21.2107885,45.7630333],[21.2101233,45.7618657],[21.2096512,45.7602789],[21.2094581,45.7578536],[21.2038576,45.7587369],[21.2028062,45.7586471],[21.2018835,45.7587519],[21.1998021,45.7585872],[21.1979139,45.7582129],[21.1958539,45.757659],[21.1954475,45.7609168],[21.1949548,45.7632568]]]}},{"type":"Feature","properties":{"name":"Circumvalatiunii","type":"suburb","isCommune":false},"geometry":{"type":"Polygon","coordinates":[[[21.2094581,45.7578536],[21.2096512,45.7602789],[21.2101233,45.7618657],[21.2107885,45.7630333],[21.2118184,45.7645003],[21.2169979,45.7678959],[21.2177415,45.7681913],[21.2186021,45.7684226],[21.2190689,45.7685827],[21.2197341,45.7686425],[21.2202491,45.7689718],[21.2249483,45.7644214],[21.226624,45.7620967],[21.2256765,45.7619241],[21.2247925,45.7616348],[21.2231241,45.760775],[21.2221885,45.7600256],[21.2212609,45.7590283],[21.2205058,45.7565639],[21.2197633,45.7541681],[21.2180373,45.7528131],[21.2159267,45.7521094],[21.2155728,45.7530969],[21.2159907,45.7544474],[21.2170053,45.7566389],[21.2134063,45.7569853],[21.2094581,45.7578536]]]}},{"type":"Feature","properties":{"name":"Lipovei","type":"suburb","isCommune":false},"geometry":{"type":"Polygon","coordinates":[[[21.2241692,45.7684427],[21.2293489,45.7681034],[21.2298984,45.7684427],[21.2317223,45.7727683],[21.2334818,45.7770487],[21.2341569,45.7786182],[21.2346405,45.7797424],[21.2364555,45.7840785],[21.2429585,45.7815781],[21.2454805,45.7806066],[21.2507768,45.7786616],[21.2519272,45.7781997],[21.2523136,45.7780223],[21.2538381,45.7717573],[21.2441607,45.766788],[21.238914,45.7642863],[21.2365077,45.7636142],[21.2328483,45.7629916],[21.2265823,45.7622169],[21.2253402,45.7638532],[21.225285,45.7663921],[21.2241692,45.7684427]]]}},{"type":"Feature","properties":{"name":"Soarelui","type":"suburb","isCommune":false},"geometry":{"type":"Polygon","coordinates":[[[21.237652,45.7315808],[21.2382604,45.7386936],[21.2419889,45.7381011],[21.2499926,45.7372175],[21.2508724,45.7371576],[21.2527177,45.7365585],[21.2537818,45.7360984],[21.2593052,45.732994],[21.2582324,45.7320954],[21.2545159,45.7306557],[21.2531683,45.7307174],[21.249027,45.730972],[21.245261,45.7312549],[21.237652,45.7315808]]]}},{"type":"Feature","properties":{"name":"Fratelia","type":"suburb","isCommune":false},"geometry":{"type":"Polygon","coordinates":[[[21.2044357,45.7272161],[21.2057126,45.7283695],[21.2084326,45.7266183],[21.2091011,45.7264237],[21.2095249,45.7272401],[21.2125498,45.7269735],[21.2127334,45.7269561],[21.2145379,45.7267982],[21.2160192,45.726578],[21.2209061,45.7260912],[21.2271899,45.7254382],[21.2336312,45.7247413],[21.2330592,45.721791],[21.2327072,45.7213511],[21.2327501,45.7212818],[21.232506,45.7203924],[21.2323534,45.7204207],[21.2314438,45.7178642],[21.2308055,45.7180197],[21.2312687,45.7192876],[21.2297273,45.7196414],[21.2274581,45.7201058],[21.2257817,45.7203942],[21.2256309,45.7197807],[21.2235635,45.7200515],[21.2237942,45.7212144],[21.2203264,45.7217051],[21.2199895,45.7207556],[21.2192184,45.7196789],[21.2182018,45.7184729],[21.2145214,45.7157436],[21.2159337,45.7142744],[21.2122541,45.7138609],[21.2044357,45.7272161]]]}},{"type":"Feature","properties":{"name":"Girocului","type":"suburb","isCommune":false},"geometry":{"type":"Polygon","coordinates":[[[21.2267637,45.7350257],[21.2308254,45.736263],[21.2310016,45.7363167],[21.2382604,45.7386936],[21.2375424,45.7325391],[21.237652,45.7315808],[21.2374698,45.7300971],[21.2373088,45.728786],[21.2274594,45.7292787],[21.2273764,45.7292828],[21.2273745,45.7293288],[21.2277423,45.7312297],[21.2279221,45.7319405],[21.2279074,45.7320267],[21.2278743,45.7321572],[21.2267637,45.7350257]]]}},{"type":"Feature","properties":{"name":"Braytim","type":"suburb","isCommune":false},"geometry":{"type":"Polygon","coordinates":[[[21.2271899,45.7254382],[21.2273235,45.7265285],[21.2273253,45.7265933],[21.2274769,45.7282333],[21.2274824,45.7283138],[21.2274858,45.7285073],[21.2274931,45.7285815],[21.2273764,45.7292828],[21.2274594,45.7292787],[21.2373088,45.728786],[21.2374698,45.7300971],[21.237652,45.7315808],[21.245261,45.7312549],[21.2545159,45.7306557],[21.2539978,45.7300478],[21.2540575,45.7295594],[21.2559243,45.7250507],[21.2558231,45.7249636],[21.2539931,45.7233879],[21.2534668,45.7226716],[21.2533923,45.722579],[21.2529449,45.7217167],[21.2523623,45.7204517],[21.247739,45.7206424],[21.2451052,45.7206892],[21.244377,45.7206971],[21.2437277,45.7207145],[21.2408181,45.7208113],[21.2367882,45.7203685],[21.236592,45.7204438],[21.2364344,45.7205043],[21.2330592,45.721791],[21.2336312,45.7247413],[21.2271899,45.7254382]]]}},{"type":"Feature","properties":{"name":"Blascovici","type":"suburb","isCommune":false},"geometry":{"type":"Polygon","coordinates":[[[21.1897375,45.7507607],[21.1900389,45.7522992],[21.1904466,45.7533322],[21.1917984,45.7551289],[21.1938456,45.7567803],[21.1938584,45.7567907],[21.1958539,45.757659],[21.1979139,45.7582129],[21.1998021,45.7585872],[21.2018835,45.7587519],[21.2028062,45.7586471],[21.2038576,45.7587369],[21.2061107,45.7584525],[21.2094581,45.7578536],[21.2134063,45.7569853],[21.2170053,45.7566389],[21.2159907,45.7544474],[21.2155728,45.7530969],[21.2159267,45.7521094],[21.2128189,45.7523342],[21.2096921,45.7528896],[21.2093131,45.7535639],[21.2054283,45.7530879],[21.2015056,45.7525722],[21.1996675,45.7525061],[21.1965975,45.7519507],[21.1897375,45.7507607]]]}},{"type":"Feature","properties":{"name":"Ciarda Rosie","type":"suburb","isCommune":false},"geometry":{"type":"Polygon","coordinates":[[[21.2539978,45.7300478],[21.2545159,45.7306557],[21.2582324,45.7320954],[21.2593052,45.732994],[21.2603935,45.73255],[21.2650927,45.7302584],[21.2652195,45.7302223],[21.2694186,45.7290263],[21.2714978,45.7315558],[21.2827492,45.7290712],[21.284233,45.7267909],[21.2843156,45.7242479],[21.2790584,45.7251767],[21.2785963,45.7242803],[21.2776455,45.7224841],[21.2742337,45.7181247],[21.2712617,45.716302],[21.2685308,45.7180703],[21.2664145,45.7193961],[21.2644391,45.7206648],[21.2625105,45.7218778],[21.2585911,45.7243866],[21.2581404,45.7247461],[21.2562592,45.7249941],[21.2561567,45.7250105],[21.2559243,45.7250507],[21.2540575,45.7295594],[21.2539978,45.7300478]]]}},{"type":"Feature","properties":{"name":"Ronat","type":"suburb","isCommune":false},"geometry":{"type":"Polygon","coordinates":[[[21.177791,45.750338],[21.181091,45.753832],[21.1816897,45.754901],[21.1808937,45.7572545],[21.1786008,45.7630981],[21.1818187,45.7637485],[21.1954647,45.766666],[21.1950306,45.7637591],[21.1949548,45.7632568],[21.1954475,45.7609168],[21.1958539,45.757659],[21.1938456,45.7567803],[21.1917984,45.7551289],[21.1904466,45.7533322],[21.1900389,45.7522992],[21.1897375,45.7507607],[21.1897565,45.7500466],[21.1901544,45.7485127],[21.1894083,45.7487571],[21.1881852,45.748832],[21.186372,45.7493485],[21.1856639,45.749633],[21.1846913,45.7493633],[21.1840439,45.7491838],[21.1820376,45.7488357],[21.1812195,45.7489967],[21.1797657,45.7489069],[21.177791,45.750338]]]}},{"type":"Feature","properties":{"name":"Steaua","type":"suburb","isCommune":false},"geometry":{"type":"Polygon","coordinates":[[[21.1995117,45.7215683],[21.2044357,45.7272161],[21.2122541,45.7138609],[21.2139319,45.7111337],[21.2119214,45.7110004],[21.2092459,45.7108356],[21.2078429,45.7108711],[21.2065423,45.7112036],[21.2056464,45.7117833],[21.2049061,45.7125736],[21.2042731,45.7136299],[21.2030661,45.7157462],[21.1995117,45.7215683]]]}},{"type":"Feature","properties":{"name":"Plopi","type":"suburb","isCommune":false},"geometry":{"type":"Polygon","coordinates":[[[21.2632587,45.7496155],[21.264141,45.757954],[21.2727015,45.7554932],[21.2796265,45.7535634],[21.2808534,45.753213],[21.2809999,45.7531751],[21.2823471,45.7527959],[21.2912348,45.7505216],[21.292315,45.750905],[21.2944563,45.748538],[21.2924097,45.7408546],[21.2849422,45.7420155],[21.2821591,45.7405436],[21.2782967,45.7432167],[21.2743056,45.7426252],[21.2738657,45.7431343],[21.273061,45.7436734],[21.2725392,45.7446808],[21.2704654,45.7486835],[21.2632587,45.7496155]]]}},{"type":"Feature","properties":{"name":"Tipografilor","type":"suburb","isCommune":false},"geometry":{"type":"Polygon","coordinates":[[[21.2205058,45.7565639],[21.2212609,45.7590283],[21.2221885,45.7600256],[21.2231241,45.760775],[21.2247925,45.7616348],[21.2265459,45.7620294],[21.2270253,45.7621373],[21.2289105,45.7623577],[21.2309383,45.7626156],[21.2332946,45.7628985],[21.2342982,45.763056],[21.2368132,45.763656],[21.237378,45.7638363],[21.2391781,45.7644109],[21.2441607,45.766788],[21.24474,45.7663838],[21.2470575,45.7639589],[21.2476332,45.7625897],[21.2456413,45.7621475],[21.2436473,45.7614764],[21.2434381,45.761406],[21.2334104,45.7579409],[21.2304492,45.7593631],[21.2287111,45.7594885],[21.2282491,45.7594086],[21.2281022,45.7593831],[21.2280687,45.7593773],[21.227807,45.759332],[21.2273808,45.7592583],[21.2250419,45.7578511],[21.2246986,45.7562941],[21.2242942,45.7563201],[21.2214151,45.7565054],[21.2213403,45.7565102],[21.2205058,45.7565639]]]}},{"type":"Feature","properties":{"name":"Torontalului","type":"suburb","isCommune":false},"geometry":{"type":"Polygon","coordinates":[[[21.1992574,45.773813],[21.2020996,45.7749747],[21.2022166,45.7750266],[21.2102713,45.778326],[21.2125887,45.7762906],[21.2182894,45.7708442],[21.2202491,45.7689718],[21.2197341,45.7686425],[21.2190689,45.7685827],[21.2186021,45.7684226],[21.2177415,45.7681913],[21.2169979,45.7678959],[21.2117763,45.7694486],[21.2106628,45.7700691],[21.2087806,45.771118],[21.2076432,45.771634],[21.2067221,45.7720519],[21.2052828,45.7722386],[21.2036093,45.7719585],[21.2014348,45.7722056],[21.1992574,45.773813]]]}},{"type":"Feature","properties":{"name":"Kuncz","type":"suburb","isCommune":false},"geometry":{"type":"Polygon","coordinates":[[[21.2627169,45.7451725],[21.2632587,45.7496155],[21.2704654,45.7486835],[21.2725392,45.7446808],[21.2668148,45.7445186],[21.26517,45.7447029],[21.2627169,45.7451725]]]}},{"type":"Feature","properties":{"name":"Olimpia-Stadion","type":"suburb","isCommune":false},"geometry":{"type":"Polygon","coordinates":[[[21.2369544,45.7436042],[21.2414715,45.7452521],[21.246529,45.7470661],[21.2492766,45.7480184],[21.2493262,45.7480356],[21.2516141,45.7445569],[21.2515261,45.7407745],[21.251795,45.7393029],[21.2533414,45.7384021],[21.2542319,45.7361856],[21.2537818,45.7360984],[21.2527177,45.7365585],[21.2508724,45.7371576],[21.2499926,45.7372175],[21.2419889,45.7381011],[21.2382604,45.7386936],[21.2385477,45.7414798],[21.2370666,45.7434278],[21.2369544,45.7436042]]]}},{"type":"Feature","properties":{"name":"Ghiroda Noua","type":"suburb","isCommune":false},"geometry":{"type":"Polygon","coordinates":[[[21.2691739,45.7575767],[21.2711759,45.7624918],[21.2702317,45.7637643],[21.2757464,45.7637942],[21.2757035,45.7656653],[21.2807857,45.7664856],[21.2811752,45.7665485],[21.2823339,45.7663389],[21.2824626,45.7645726],[21.2838359,45.763869],[21.2850805,45.7635996],[21.285157,45.7614671],[21.2851989,45.7602971],[21.281274,45.7608018],[21.2797451,45.7560336],[21.2829745,45.7552701],[21.2828913,45.7547817],[21.2843746,45.7542502],[21.2840756,45.7537121],[21.2746306,45.7562192],[21.2691739,45.7575767]]]}},{"type":"Feature","properties":{"name":"Dambovita","type":"suburb","isCommune":false},"geometry":{"type":"Polygon","coordinates":[[[21.1923527,45.7339516],[21.1938875,45.7350399],[21.1963445,45.7366162],[21.1980498,45.7369811],[21.2024951,45.7379316],[21.204045,45.7382502],[21.2100332,45.7391628],[21.2087067,45.7326156],[21.2084983,45.7319146],[21.2057126,45.7283695],[21.2044357,45.7272161],[21.1995117,45.7215683],[21.1969614,45.7256635],[21.1944182,45.7315442],[21.1935919,45.732775],[21.1933404,45.7330067],[21.1923527,45.7339516]]]}}]};
+  const BAND_COLORS = {1:'#048ba8',2:'#9bd1dc',3:'#e8e4dc',4:'#f28396',5:'#e71e41'};
+  const BAND_LABELS = {1:'Accesibil',2:'Sub medie',3:'Mediu',4:'Peste medie',5:'Premium'};
+  const mockData = {"Elisabetin":{"name":"Elisabetin","apartments":{"sale":{"band":5,"range":"1.615 – 2.185 €/m²","trend":"up"},"rent":{"band":5,"range":"459 – 621 €/lună","trend":"up"}},"houses":{"sale":{"band":5,"range":"1.325 – 1.791 €/m²","trend":"stable"},"rent":{"band":5,"range":"597 – 807 €/lună","trend":"up"}}},"Iosefin":{"name":"Iosefin","apartments":{"sale":{"band":4,"range":"1.318 – 1.782 €/m²","trend":"up"},"rent":{"band":4,"range":"400 – 540 €/lună","trend":"up"}},"houses":{"sale":{"band":3,"range":"1.081 – 1.461 €/m²","trend":"down"},"rent":{"band":4,"range":"520 – 702 €/lună","trend":"stable"}}},"Fabric":{"name":"Fabric","apartments":{"sale":{"band":3,"range":"1.105 – 1.495 €/m²","trend":"up"},"rent":{"band":3,"range":"340 – 460 €/lună","trend":"up"}},"houses":{"sale":{"band":3,"range":"907 – 1.225 €/m²","trend":"up"},"rent":{"band":2,"range":"442 – 598 €/lună","trend":"up"}}},"Mehala":{"name":"Mehala","apartments":{"sale":{"band":1,"range":"808 – 1.092 €/m²","trend":"up"},"rent":{"band":1,"range":"238 – 322 €/lună","trend":"up"}},"houses":{"sale":{"band":1,"range":"663 – 895 €/m²","trend":"down"},"rent":{"band":1,"range":"310 – 418 €/lună","trend":"up"}}},"Circumvalatiunii":{"name":"Circumvalatiunii","apartments":{"sale":{"band":4,"range":"1.318 – 1.782 €/m²","trend":"stable"},"rent":{"band":4,"range":"400 – 540 €/lună","trend":"stable"}},"houses":{"sale":{"band":3,"range":"1.081 – 1.461 €/m²","trend":"up"},"rent":{"band":3,"range":"520 – 702 €/lună","trend":"up"}}},"Lipovei":{"name":"Lipovei","apartments":{"sale":{"band":3,"range":"1.105 – 1.495 €/m²","trend":"up"},"rent":{"band":3,"range":"340 – 460 €/lună","trend":"stable"}},"houses":{"sale":{"band":3,"range":"907 – 1.225 €/m²","trend":"up"},"rent":{"band":3,"range":"442 – 598 €/lună","trend":"stable"}}},"Soarelui":{"name":"Soarelui","apartments":{"sale":{"band":3,"range":"1.105 – 1.495 €/m²","trend":"up"},"rent":{"band":3,"range":"340 – 460 €/lună","trend":"up"}},"houses":{"sale":{"band":3,"range":"907 – 1.225 €/m²","trend":"stable"},"rent":{"band":2,"range":"442 – 598 €/lună","trend":"stable"}}},"Fratelia":{"name":"Fratelia","apartments":{"sale":{"band":2,"range":"935 – 1.265 €/m²","trend":"up"},"rent":{"band":2,"range":"289 – 391 €/lună","trend":"stable"}},"houses":{"sale":{"band":1,"range":"767 – 1.037 €/m²","trend":"stable"},"rent":{"band":2,"range":"376 – 508 €/lună","trend":"stable"}}},"Girocului":{"name":"Girocului","apartments":{"sale":{"band":3,"range":"1.105 – 1.495 €/m²","trend":"up"},"rent":{"band":3,"range":"340 – 460 €/lună","trend":"stable"}},"houses":{"sale":{"band":2,"range":"907 – 1.225 €/m²","trend":"down"},"rent":{"band":3,"range":"442 – 598 €/lună","trend":"up"}}},"Braytim":{"name":"Braytim","apartments":{"sale":{"band":3,"range":"1.105 – 1.495 €/m²","trend":"stable"},"rent":{"band":3,"range":"340 – 460 €/lună","trend":"up"}},"houses":{"sale":{"band":2,"range":"907 – 1.225 €/m²","trend":"up"},"rent":{"band":3,"range":"442 – 598 €/lună","trend":"stable"}}},"Blascovici":{"name":"Blascovici","apartments":{"sale":{"band":2,"range":"935 – 1.265 €/m²","trend":"up"},"rent":{"band":2,"range":"289 – 391 €/lună","trend":"stable"}},"houses":{"sale":{"band":2,"range":"767 – 1.037 €/m²","trend":"stable"},"rent":{"band":2,"range":"376 – 508 €/lună","trend":"stable"}}},"Ciarda Rosie":{"name":"Ciarda Rosie","apartments":{"sale":{"band":2,"range":"935 – 1.265 €/m²","trend":"up"},"rent":{"band":2,"range":"289 – 391 €/lună","trend":"up"}},"houses":{"sale":{"band":1,"range":"767 – 1.037 €/m²","trend":"up"},"rent":{"band":1,"range":"376 – 508 €/lună","trend":"up"}}},"Ronat":{"name":"Ronat","apartments":{"sale":{"band":2,"range":"935 – 1.265 €/m²","trend":"up"},"rent":{"band":2,"range":"289 – 391 €/lună","trend":"stable"}},"houses":{"sale":{"band":2,"range":"767 – 1.037 €/m²","trend":"down"},"rent":{"band":1,"range":"376 – 508 €/lună","trend":"up"}}},"Steaua":{"name":"Steaua","apartments":{"sale":{"band":2,"range":"935 – 1.265 €/m²","trend":"up"},"rent":{"band":2,"range":"289 – 391 €/lună","trend":"stable"}},"houses":{"sale":{"band":1,"range":"767 – 1.037 €/m²","trend":"up"},"rent":{"band":2,"range":"376 – 508 €/lună","trend":"up"}}},"Plopi":{"name":"Plopi","apartments":{"sale":{"band":2,"range":"935 – 1.265 €/m²","trend":"stable"},"rent":{"band":2,"range":"289 – 391 €/lună","trend":"stable"}},"houses":{"sale":{"band":2,"range":"767 – 1.037 €/m²","trend":"up"},"rent":{"band":1,"range":"376 – 508 €/lună","trend":"stable"}}},"Tipografilor":{"name":"Tipografilor","apartments":{"sale":{"band":2,"range":"935 – 1.265 €/m²","trend":"up"},"rent":{"band":2,"range":"289 – 391 €/lună","trend":"stable"}},"houses":{"sale":{"band":2,"range":"767 – 1.037 €/m²","trend":"down"},"rent":{"band":2,"range":"376 – 508 €/lună","trend":"stable"}}},"Torontalului":{"name":"Torontalului","apartments":{"sale":{"band":2,"range":"935 – 1.265 €/m²","trend":"up"},"rent":{"band":2,"range":"289 – 391 €/lună","trend":"up"}},"houses":{"sale":{"band":1,"range":"767 – 1.037 €/m²","trend":"down"},"rent":{"band":2,"range":"376 – 508 €/lună","trend":"stable"}}},"Kuncz":{"name":"Kuncz","apartments":{"sale":{"band":1,"range":"808 – 1.092 €/m²","trend":"up"},"rent":{"band":1,"range":"238 – 322 €/lună","trend":"stable"}},"houses":{"sale":{"band":1,"range":"663 – 895 €/m²","trend":"up"},"rent":{"band":1,"range":"310 – 418 €/lună","trend":"up"}}},"Olimpia-Stadion":{"name":"Olimpia-Stadion","apartments":{"sale":{"band":3,"range":"1.105 – 1.495 €/m²","trend":"up"},"rent":{"band":3,"range":"340 – 460 €/lună","trend":"up"}},"houses":{"sale":{"band":3,"range":"907 – 1.225 €/m²","trend":"up"},"rent":{"band":2,"range":"442 – 598 €/lună","trend":"stable"}}},"Ghiroda Noua":{"name":"Ghiroda Noua","apartments":{"sale":{"band":2,"range":"935 – 1.265 €/m²","trend":"up"},"rent":{"band":2,"range":"289 – 391 €/lună","trend":"up"}},"houses":{"sale":{"band":2,"range":"767 – 1.037 €/m²","trend":"down"},"rent":{"band":1,"range":"376 – 508 €/lună","trend":"stable"}}},"Dambovita":{"name":"Dambovita","apartments":{"sale":{"band":3,"range":"1.105 – 1.495 €/m²","trend":"up"},"rent":{"band":3,"range":"340 – 460 €/lună","trend":"up"}},"houses":{"sale":{"band":2,"range":"907 – 1.225 €/m²","trend":"up"},"rent":{"band":2,"range":"442 – 598 €/lună","trend":"stable"}}}};
+
+  let currentProperty = 'apartments', currentMarket = 'sale';
+
+  // ── Leaflet Map ───────────────────────────────────────────
+  const map = L.map('map', {
+    center: [45.749, 21.230],
+    zoom: 13,
+    minZoom: 12,
+    maxZoom: 16,
+    zoomControl: false,
+    attributionControl: true
+  });
+
+  // CARTO Positron (light) tiles — same as the Timișoara reference image
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>',
+    subdomains: 'abcd',
+    maxZoom: 19
+  }).addTo(map);
+
+  // Zoom control top-right
+  L.control.zoom({position: 'topright'}).addTo(map);
+
+  // ── GeoJSON Layer ─────────────────────────────────────────
+  let geoLayer;
+  const labelMarkers = [];
+
+  function getColor(name) {
+    const data = mockData[name];
+    if (!data) return '#e5e7eb';
+    const entry = data[currentProperty]?.[currentMarket];
+    return entry ? BAND_COLORS[entry.band] : '#e5e7eb';
+  }
+
+  function style(feature) {
+    return {
+      fillColor: getColor(feature.properties.name),
+      fillOpacity: 0.65,
+      color: '#ffffff',
+      weight: 2,
+      opacity: 0.9
+    };
+  }
+
+  function highlightFeature(e) {
+    const layer = e.target;
+    layer.setStyle({
+      fillOpacity: 0.85,
+      weight: 2.5,
+      color: 'rgba(255,255,255,0.95)'
+    });
+    layer.bringToFront();
+    // Re-add labels on top
+    labelGroup.eachLayer(l => l.bringToFront());
+  }
+
+  function resetHighlight(e) {
+    geoLayer.resetStyle(e.target);
+  }
+
+  function onEachFeature(feature, layer) {
+    const name = feature.properties.name;
+
+    layer.on({
+      mouseover: highlightFeature,
+      mouseout: resetHighlight,
+      click: function(e) {
+        const data = mockData[name];
+        if (!data) return;
+        const entry = data[currentProperty]?.[currentMarket];
+        if (!entry) return;
+        const arrow = entry.trend==='up'?'↑':entry.trend==='down'?'↓':'→';
+        const trendClass = entry.trend;
+        const bandColor = BAND_COLORS[entry.band];
+
+        const isMobile = window.innerWidth <= 640;
+        zoneJustClicked = true;
+
+        if (isMobile) {
+          // Bottom sheet
+          document.getElementById('bsName').textContent = data.name;
+          document.getElementById('bsPrice').textContent = entry.range;
+          const tEl = document.getElementById('bsTrend');
+          tEl.className = 'bottom-sheet-trend ' + trendClass;
+          tEl.innerHTML = `<span class="tt-swatch" style="background:${bandColor}"></span>${arrow} ${BAND_LABELS[entry.band]}`;
+          document.getElementById('bottomSheet').classList.add('visible');
+        } else {
+          // Desktop popup
+          L.popup()
+            .setLatLng(e.latlng)
+            .setContent(`
+              <div class="tt-name">${data.name}</div>
+              <div class="tt-price">${entry.range}</div>
+              <div class="tt-trend ${trendClass}">
+                <span class="tt-swatch" style="background:${bandColor}"></span>
+                ${arrow} ${BAND_LABELS[entry.band]}
+              </div>
+            `)
+            .openOn(map);
+        }
+      }
+    });
+
+    // Add label
+    const center = layer.getBounds().getCenter();
+    const label = L.marker(center, {
+      icon: L.divIcon({
+        className: 'zone-label',
+        html: name,
+        iconSize: [100, 20],
+        iconAnchor: [50, 10]
+      }),
+      interactive: false
+    });
+    labelMarkers.push(label);
+  }
+
+  geoLayer = L.geoJSON(geoData, {style, onEachFeature}).addTo(map);
+
+  // Add labels
+  const labelGroup = L.layerGroup(labelMarkers).addTo(map);
+
+  // ── Filters ───────────────────────────────────────────────
+  function setFilter(type, val, btn) {
+    btn.parentElement.querySelectorAll('.seg-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    if (type === 'property') currentProperty = val;
+    if (type === 'market') currentMarket = val;
+    updateMap();
+  }
+
+  function updateMap() {
+    geoLayer.eachLayer(layer => {
+      const name = layer.feature.properties.name;
+      layer.setStyle({fillColor: getColor(name)});
+    });
+  }
+
+  // ── Bottom sheet dismiss ─────────────────────────────────
+  let zoneJustClicked = false;
+  map.on('click', function(e) {
+    if (zoneJustClicked) { zoneJustClicked = false; return; }
+    document.getElementById('bottomSheet').classList.remove('visible');
+  });
+
+  // Swipe down to dismiss
+  const bs = document.getElementById('bottomSheet');
+  let touchStartY = 0;
+  bs.addEventListener('touchstart', e => { touchStartY = e.touches[0].clientY; });
+  bs.addEventListener('touchmove', e => {
+    const dy = e.touches[0].clientY - touchStartY;
+    if (dy > 40) { bs.classList.remove('visible'); }
+  });
+
+  // ── Login Gate ────────────────────────────────────────────
+  function toggleLoginGate() {
+    const g = document.getElementById('loginGate'), t = document.getElementById('gateToggle');
+    const a = g.classList.toggle('active'); t.classList.toggle('active', a);
+  }
+  </script>
+</body>
+</html>
